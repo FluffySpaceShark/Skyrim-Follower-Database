@@ -27,10 +27,14 @@ export default function App() {
   // Filters State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGender, setSelectedGender] = useState('');
-  const [selectedRace, setSelectedRace] = useState('');
-  const [selectedMod, setSelectedMod] = useState('');
+  const [selectedRaces, setSelectedRaces] = useState<string[]>([]);
+  const [selectedMods, setSelectedMods] = useState<string[]>([]);
   const [excludedMods, setExcludedMods] = useState<string[]>([]);
-  const [interactFilter, setInteractFilter] = useState('');
+  const [interactFilters, setInteractFilters] = useState<string[]>([]);
+  const [globalFilterLogic, setGlobalFilterLogic] = useState<'and' | 'or'>('and');
+  const [raceMatchMode, setRaceMatchMode] = useState<'and' | 'or'>('or');
+  const [modMatchMode, setModMatchMode] = useState<'and' | 'or'>('or');
+  const [interactMatchMode, setInteractMatchMode] = useState<'and' | 'or'>('or');
   
   // Selected Follower details state (default to Inigo or first item)
   const [selectedFollowerName, setSelectedFollowerName] = useState('Inigo');
@@ -61,53 +65,101 @@ export default function App() {
   // Filter & Sort core logic
   const filteredFollowers = useMemo(() => {
     return FOLLOWERS.filter(f => {
-      // 1. Text Search query matching name, role/class, or origin mod
-      if (searchQuery.trim() !== '') {
-        const query = searchQuery.toLowerCase();
-        const matchesName = f.follower.toLowerCase().includes(query);
-        const matchesClass = f.class.toLowerCase().includes(query);
-        const matchesMod = f.mod.toLowerCase().includes(query);
-        const matchesRace = f.race.toLowerCase().includes(query);
-        if (!matchesName && !matchesClass && !matchesMod && !matchesRace) {
-          return false;
-        }
-      }
-
-      // 2. Gender select filter
-      if (selectedGender && f.gender !== selectedGender) {
-        return false;
-      }
-
-      // 3. Race select filter
-      if (selectedRace && f.race !== selectedRace) {
-        return false;
-      }
-
-      // 4. Mod pack select filter
-      if (selectedMod && f.mod !== selectedMod) {
-        return false;
-      }
-
-      // 4.1 Mod pack exclude filters (multiple)
+      // Excluded mods override EVERYTHING: if a follower is from an excluded mod, they are out!
       if (excludedMods.length > 0 && excludedMods.includes(f.mod)) {
         return false;
       }
 
-      // 5. Interactions filter
-      if (interactFilter) {
-        if (interactFilter === '__has_any__') {
-          // Must have at least one interaction partner
-          if (f.interactsWith.length === 0) return false;
+      // Check active filters counts
+      const activeKeyword = searchQuery.trim() !== '';
+      const activeGender = !!selectedGender;
+      const activeRace = selectedRaces.length > 0;
+      const activeMod = selectedMods.length > 0;
+      const activeInteracts = interactFilters.length > 0;
+
+      // 1. Text Search matching
+      let matchesKeyword = false;
+      if (activeKeyword) {
+        const query = searchQuery.toLowerCase();
+        matchesKeyword = f.follower.toLowerCase().includes(query) ||
+                         f.class.toLowerCase().includes(query) ||
+                         f.mod.toLowerCase().includes(query) ||
+                         f.race.toLowerCase().includes(query);
+      }
+
+      // 2. Gender matching
+      let matchesGender = false;
+      if (activeGender) {
+        matchesGender = f.gender === selectedGender;
+      }
+
+      // 3. Race matching (multi-select)
+      let matchesRace = false;
+      if (activeRace) {
+        if (raceMatchMode === 'and') {
+          matchesRace = selectedRaces.every(race => f.race === race);
         } else {
-          // Must interact specifically with selected companion
-          const hasInteraction = f.interactsWith.some(
-            partner => partner.toLowerCase() === interactFilter.toLowerCase()
-          );
-          if (!hasInteraction) return false;
+          matchesRace = selectedRaces.includes(f.race);
         }
       }
 
-      return true;
+      // 4. Mod pack matching (multi-select)
+      let matchesMod = false;
+      if (activeMod) {
+        if (modMatchMode === 'and') {
+          matchesMod = selectedMods.every(m => f.mod === m);
+        } else {
+          matchesMod = selectedMods.includes(f.mod);
+        }
+      }
+
+      // 5. Interactions matching (multi-select)
+      let matchesInteracts = false;
+      if (activeInteracts) {
+        const matchesOption = (filterItem: string) => {
+          if (filterItem === '__has_any__') {
+            return f.interactsWith.length > 0;
+          } else {
+            return f.interactsWith.some(
+              partner => partner.toLowerCase() === filterItem.toLowerCase()
+            );
+          }
+        };
+
+        if (interactMatchMode === 'and') {
+          matchesInteracts = interactFilters.every(matchesOption);
+        } else {
+          matchesInteracts = interactFilters.some(matchesOption);
+        }
+      }
+
+      // Calculate total match conditions
+      const activeFiltersCount = 
+        (activeKeyword ? 1 : 0) +
+        (activeGender ? 1 : 0) +
+        (activeRace ? 1 : 0) +
+        (activeMod ? 1 : 0) +
+        (activeInteracts ? 1 : 0);
+
+      if (activeFiltersCount === 0) {
+        return true;
+      }
+
+      if (globalFilterLogic === 'any') {
+        // OR across categories: matches AT LEAST ONE active filter
+        return (activeKeyword && matchesKeyword) ||
+               (activeGender && matchesGender) ||
+               (activeRace && matchesRace) ||
+               (activeMod && matchesMod) ||
+               (activeInteracts && matchesInteracts);
+      } else {
+        // AND across categories: must match ALL active filters
+        return (!activeKeyword || matchesKeyword) &&
+               (!activeGender || matchesGender) &&
+               (!activeRace || matchesRace) &&
+               (!activeMod || matchesMod) &&
+               (!activeInteracts || matchesInteracts);
+      }
     }).sort((a, b) => {
       let valA = a[sortField]?.toLowerCase() || '';
       let valB = b[sortField]?.toLowerCase() || '';
@@ -118,7 +170,11 @@ export default function App() {
         return valA < valB ? 1 : valA > valB ? -1 : 0;
       }
     });
-  }, [searchQuery, selectedGender, selectedRace, selectedMod, excludedMods, interactFilter, sortField, sortDirection]);
+  }, [
+    searchQuery, selectedGender, selectedRaces, selectedMods, excludedMods, interactFilters,
+    globalFilterLogic, raceMatchMode, modMatchMode, interactMatchMode,
+    sortField, sortDirection
+  ]);
 
   // Lookup the currently selected follower object
   const activeFollower = useMemo(() => {
@@ -136,10 +192,14 @@ export default function App() {
   const handleClearFilters = () => {
     setSearchQuery('');
     setSelectedGender('');
-    setSelectedRace('');
-    setSelectedMod('');
+    setSelectedRaces([]);
+    setSelectedMods([]);
     setExcludedMods([]);
-    setInteractFilter('');
+    setInteractFilters([]);
+    setGlobalFilterLogic('and');
+    setRaceMatchMode('or');
+    setModMatchMode('or');
+    setInteractMatchMode('or');
   };
 
   const handleSort = (field: SortField) => {
@@ -178,7 +238,7 @@ export default function App() {
     }
   }, [selectedFollowerName]);
 
-  const hasActiveFilters = searchQuery || selectedGender || selectedRace || selectedMod || excludedMods.length > 0 || interactFilter;
+  const hasActiveFilters = searchQuery || selectedGender || selectedRaces.length > 0 || selectedMods.length > 0 || excludedMods.length > 0 || interactFilters.length > 0;
 
   return (
     <div className="min-h-screen bg-skyrim-bg text-gray-200 selection:bg-skyrim-gold selection:text-black" id="skyrim-follower-app">
@@ -290,15 +350,47 @@ export default function App() {
               </label>
               <select
                 id="race-select"
-                value={selectedRace}
-                onChange={(e) => setSelectedRace(e.target.value)}
+                value=""
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val && !selectedRaces.includes(val)) {
+                    setSelectedRaces([...selectedRaces, val]);
+                  }
+                }}
                 className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
               >
-                <option value="">All Races</option>
+                <option value="">Select Races...</option>
                 {races.map(raceString => (
-                  <option key={raceString} value={raceString}>{raceString}</option>
+                  <option 
+                    key={raceString} 
+                    value={raceString}
+                    disabled={selectedRaces.includes(raceString)}
+                    className="text-gray-205 disabled:text-gray-600"
+                  >
+                    {selectedRaces.includes(raceString) ? `✓ ${raceString}` : raceString}
+                  </option>
                 ))}
               </select>
+              {/* Race badges micro-list */}
+              {selectedRaces.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                  {selectedRaces.map(raceName => (
+                    <span 
+                      key={`race-badge-${raceName}`}
+                      className="inline-flex items-center gap-1 bg-amber-950/20 text-[10px] text-skyrim-gold-light border border-skyrim-border/50 px-1.5 py-0.5 rounded"
+                    >
+                      <span className="truncate max-w-[130px]">{raceName}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedRaces(selectedRaces.filter(r => r !== raceName))}
+                        className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Filter 4: Origin Mod file */}
@@ -308,15 +400,47 @@ export default function App() {
               </label>
               <select
                 id="mod-select"
-                value={selectedMod}
-                onChange={(e) => setSelectedMod(e.target.value)}
+                value=""
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val && !selectedMods.includes(val)) {
+                    setSelectedMods([...selectedMods, val]);
+                  }
+                }}
                 className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
               >
-                <option value="">All Origin Packets</option>
+                <option value="">Select Mods...</option>
                 {mods.map(modString => (
-                  <option key={modString} value={modString}>{modString}</option>
+                  <option 
+                    key={modString} 
+                    value={modString}
+                    disabled={selectedMods.includes(modString)}
+                    className="text-gray-205 disabled:text-gray-600"
+                  >
+                    {selectedMods.includes(modString) ? `✓ ${modString}` : modString}
+                  </option>
                 ))}
               </select>
+              {/* Mods badges micro-list */}
+              {selectedMods.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                  {selectedMods.map(modName => (
+                    <span 
+                      key={`mod-badge-${modName}`}
+                      className="inline-flex items-center gap-1 bg-[#1a1921] text-[10px] text-gray-300 border border-skyrim-border/50 px-1.5 py-0.5 rounded"
+                    >
+                      <span className="truncate max-w-[130px]">{modName}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedMods(selectedMods.filter(m => m !== modName))}
+                        className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Filter 4.1: Exclude Mod Filter (Supports Multiple) */}
@@ -376,24 +500,153 @@ export default function App() {
               </label>
               <select
                 id="interact-select"
-                value={interactFilter}
-                onChange={(e) => setInteractFilter(e.target.value)}
+                value=""
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val && !interactFilters.includes(val)) {
+                    setInteractFilters([...interactFilters, val]);
+                  }
+                }}
                 className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
               >
-                <option value="">No interaction filter</option>
-                <option value="__has_any__">Has any registered banter</option>
+                <option value="">Select Banter...</option>
+                <option 
+                  value="__has_any__"
+                  disabled={interactFilters.includes('__has_any__')}
+                  className="text-skyrim-gold disabled:text-gray-600"
+                >
+                  Has any registered banter
+                </option>
                 <option disabled>── Filter by companion ──</option>
                 {followerNames.map(fName => (
-                  <option key={fName} value={fName}>Mentions {fName}</option>
+                  <option 
+                    key={fName} 
+                    value={fName}
+                    disabled={interactFilters.includes(fName)}
+                    className="text-gray-205 disabled:text-gray-600"
+                  >
+                    {interactFilters.includes(fName) ? `✓ Mentions ${fName}` : `Mentions ${fName}`}
+                  </option>
                 ))}
               </select>
+              {/* Interaction badges micro-list */}
+              {interactFilters.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                  {interactFilters.map(filterItem => (
+                    <span 
+                      key={`interact-badge-${filterItem}`}
+                      className="inline-flex items-center gap-1 bg-[#151c22] text-[10px] text-sky-300 border border-sky-900/30 px-1.5 py-0.5 rounded"
+                    >
+                      <span className="truncate max-w-[130px]">
+                        {filterItem === '__has_any__' ? 'Has Banter' : `Talks with ${filterItem}`}
+                      </span>
+                      <button 
+                        type="button" 
+                        onClick={() => setInteractFilters(interactFilters.filter(i => i !== filterItem))}
+                        className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>
 
+          {/* Logic Settings Control Panel */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-3.5 border-t border-skyrim-border/50 text-xs">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider flex items-center gap-1.5 shrink-0">
+                <Sparkles className="w-3.5 h-3.5 text-skyrim-gold/80 animate-pulse-subtle" /> Category Combination:
+              </span>
+              <div className="inline-flex rounded-lg border border-skyrim-border/70 p-0.5 bg-skyrim-surf2/80">
+                <button
+                  type="button"
+                  onClick={() => setGlobalFilterLogic('and')}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                    globalFilterLogic === 'and'
+                      ? 'bg-skyrim-gold/20 text-skyrim-gold-light border border-skyrim-gold/20 shadow-sm font-semibold'
+                      : 'text-gray-400 hover:text-gray-205 border border-transparent hover:bg-stone-800/30'
+                  }`}
+                  title="Follower must match ALL selected filters (Keyword AND Gender AND Races AND Mods AND Banter)"
+                >
+                  Match ALL Categories (AND)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGlobalFilterLogic('or')}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                    globalFilterLogic === 'or'
+                      ? 'bg-skyrim-gold/20 text-skyrim-gold-light border border-skyrim-gold/20 shadow-sm font-semibold'
+                      : 'text-gray-400 hover:text-gray-205 border border-transparent hover:bg-stone-800/30'
+                  }`}
+                  title="Follower matches if they meet AT LEAST ONE of your category filters (Gender OR Races OR Mods OR Banter)"
+                >
+                  Match ANY Category (OR)
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider shrink-0 text-gray-450">
+                Multi-Select Logic:
+              </span>
+              
+              {/* Races Match Mode Toggle */}
+              <div className="flex items-center gap-1.5 bg-skyrim-surf2/50 px-2 py-1 rounded border border-skyrim-border/40 hover:border-gray-600 transition-colors cursor-help" title="ANY allows followers matching at least one selected race; ALL requires matching all selected races (results in empty list if you select multiple since a follower only has one race).">
+                <span className="text-gray-400 text-[10px] uppercase font-medium">Races:</span>
+                <button
+                  type="button"
+                  onClick={() => setRaceMatchMode(prev => prev === 'and' ? 'or' : 'and')}
+                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider transition-all select-none ${
+                    raceMatchMode === 'and'
+                      ? 'bg-amber-950/45 text-amber-300 border border-amber-900/40 shadow-sm'
+                      : 'bg-stone-800 text-stone-400 hover:text-gray-200'
+                  }`}
+                >
+                  {raceMatchMode === 'and' ? 'ALL (AND)' : 'ANY (OR)'}
+                </button>
+              </div>
+
+              {/* Mods Match Mode Toggle */}
+              <div className="flex items-center gap-1.5 bg-skyrim-surf2/50 px-2 py-1 rounded border border-skyrim-border/40 hover:border-gray-600 transition-colors cursor-help" title="ANY allows followers starting in at least one selected mod; ALL requires matching all selected origin mods at the same time.">
+                <span className="text-gray-400 text-[10px] uppercase font-medium">Mods:</span>
+                <button
+                  type="button"
+                  onClick={() => setModMatchMode(prev => prev === 'and' ? 'or' : 'and')}
+                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider transition-all select-none ${
+                    modMatchMode === 'and'
+                      ? 'bg-amber-950/45 text-skyrim-gold border border-amber-900/40 shadow-sm'
+                      : 'bg-stone-800 text-stone-400 hover:text-gray-200'
+                  }`}
+                >
+                  {modMatchMode === 'and' ? 'ALL (AND)' : 'ANY (OR)'}
+                </button>
+              </div>
+
+              {/* Interaction Match Mode Toggle */}
+              <div className="flex items-center gap-1.5 bg-skyrim-surf2/50 px-2 py-1 rounded border border-skyrim-border/40 hover:border-gray-600 transition-colors cursor-help" title="If you filter by multiple companions: ANY will show anyone with custom dialogue banter with at least one; ALL forces the list to show only followers who interact with EVERY one of your choices (e.g. both Remiel AND Xelzaz).">
+                <span className="text-gray-400 text-[10px] uppercase font-medium">Banter:</span>
+                <button
+                  type="button"
+                  onClick={() => setInteractMatchMode(prev => prev === 'and' ? 'or' : 'and')}
+                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider transition-all select-none ${
+                    interactMatchMode === 'and'
+                      ? 'bg-sky-950/60 text-sky-305 border border-sky-900/50 shadow-sm font-extrabold'
+                      : 'bg-stone-800 text-stone-400 hover:text-gray-200'
+                  }`}
+                >
+                  {interactMatchMode === 'and' ? 'ALL (AND)' : 'ANY (OR)'}
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Active Filtering Toast Badges */}
           {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-skyrim-border/30 text-xs">
+            <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-skyrim-border/30 text-xs text-xs">
               <span className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider">Active:</span>
               {searchQuery && (
                 <span className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-300 flex items-center gap-1">
@@ -405,16 +658,30 @@ export default function App() {
                   Gender: {selectedGender}
                 </span>
               )}
-              {selectedRace && (
-                <span className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-300 flex items-center gap-1">
-                  Race: {selectedRace}
+              {selectedRaces.map(raceName => (
+                <span key={`active-race-${raceName}`} className="bg-skyrim-surf3 border border-emerald-900/20 px-2 py-0.5 rounded text-skyrim-gold-light flex items-center gap-1.5">
+                  Race: {raceName}
+                  <button 
+                    onClick={() => setSelectedRaces(prev => prev.filter(r => r !== raceName))}
+                    className="hover:text-white ml-0.5 font-bold text-gray-400"
+                    title="Remove Filter"
+                  >
+                    ✕
+                  </button>
                 </span>
-              )}
-              {selectedMod && (
-                <span className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-300 flex items-center gap-1">
-                  Mod: {selectedMod}
+              ))}
+              {selectedMods.map(modName => (
+                <span key={`active-mod-${modName}`} className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-300 flex items-center gap-1.5">
+                  Source: {modName}
+                  <button 
+                    onClick={() => setSelectedMods(prev => prev.filter(m => m !== modName))}
+                    className="hover:text-white ml-0.5 font-bold text-gray-400"
+                    title="Remove Filter"
+                  >
+                    ✕
+                  </button>
                 </span>
-              )}
+              ))}
               {excludedMods.map(modName => (
                 <span key={`active-ex-${modName}`} className="bg-rose-950/45 border border-rose-900/40 px-2 py-0.5 rounded text-rose-300 flex items-center gap-1.5">
                   Excluded: {modName}
@@ -427,11 +694,18 @@ export default function App() {
                   </button>
                 </span>
               ))}
-              {interactFilter && (
-                <span className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-100 flex items-center gap-1">
-                  Banter: {interactFilter === '__has_any__' ? 'Any interaction' : `Talks with ${interactFilter}`}
+              {interactFilters.map(filterItem => (
+                <span key={`active-interact-${filterItem}`} className="bg-[#121c22] border border-sky-900/30 px-2 py-0.5 rounded text-sky-300 flex items-center gap-1.5">
+                  {filterItem === '__has_any__' ? 'Banter: Any interaction' : `Talks with: ${filterItem}`}
+                  <button 
+                    onClick={() => setInteractFilters(prev => prev.filter(i => i !== filterItem))}
+                    className="hover:text-white ml-0.5 font-bold text-sky-400"
+                    title="Remove Filter"
+                  >
+                    ✕
+                  </button>
                 </span>
-              )}
+              ))}
             </div>
           )}
         </section>
@@ -600,22 +874,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Quick Informational Notice Footer */}
-            <div className="bg-skyrim-surf border border-skyrim-border rounded-xl p-4 flex gap-3 shadow-sm text-xs items-start">
-              <Info className="w-5 h-5 text-skyrim-gold mt-0.5 shrink-0 animate-pulse-subtle" />
-              <div>
-                <h4 className="font-display text-gray-200 uppercase tracking-wider text-[11px] font-semibold mb-0.5">
-                  Accuracy Updates Inside Registry
-                </h4>
-                <p className="text-gray-400 leading-relaxed text-[11px]">
-                  Following detailed Skyrim mod analysis, we resolved several cataloging errors in this build: 
-                  <strong> Caryalind Thallery</strong>'s gender corrected to Male (Altmer Prince), 
-                  <strong> Bikhai / Ma'kara</strong> genders correctly swapped (Bikhai is Male, Ma'kara is Female), 
-                  <strong> Taliesin</strong> class rectified to Mage, and 
-                  <strong> Nebarra</strong>'s class updated from Mage to heavy combat Soldier / Warrior.
-                </p>
-              </div>
-            </div>
+
           </div>
 
           {/* RIGHT BENTO BLOCK (5/12 cols): Live Detail Inspector */}
