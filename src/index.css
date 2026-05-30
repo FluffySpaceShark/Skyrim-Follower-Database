@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Cinzel", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-skyrim-gold: #BFA15A;
+  --color-skyrim-gold-light: #D1B679;
+  --color-skyrim-gold-dark: #9A7F41;
+  --color-skyrim-gold-bright: #E6D2A3;
+  
+  --color-skyrim-bg: #0A0A0C;
+  --color-skyrim-surf: #16161A;
+  --color-skyrim-surf2: #0D0D10;
+  --color-skyrim-surf3: #1F1F24;
+  --color-skyrim-border: rgba(191, 161, 90, 0.25);
+}
+
+/* Base custom utility animations */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020203;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(191, 161, 90, 0.25);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #BFA15A;
+}

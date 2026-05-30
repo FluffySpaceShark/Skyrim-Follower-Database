@@ -1,0 +1,6 @@
+{
+  "name": "Skyrim Followers Database",
+  "description": "An interactive database and relationship map for Skyrim custom voiced followers, their details, and crosstalk/banter interactions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
