@@ -43,7 +43,7 @@ export const FOLLOWERS: Follower[] = [
     "race": "Breton",
     "class": "Engineer / Archer",
     "mod": "Remiel",
-    "interactsWith": ["Xelzaz", "Kaidan", "Auri", "Gore", "Rumarin", "Zora Fair-Child", "Anum-La", "Redcap", "Lucifer", "Thogra Gra-Mugur"],
+    "interactsWith": ["Xelzaz", "Kaidan", "Auri", "Gore", "Rumarin", "Zora Fair-Child", "Anum-La", "Redcap", "Lucifer", "Thogra Gra-Mugur", "Taliesin"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/51874"
   },
   {
@@ -52,7 +52,7 @@ export const FOLLOWERS: Follower[] = [
     "race": "Argonian",
     "class": "Mage / Spellsword",
     "mod": "Xelzaz",
-    "interactsWith": ["Remiel", "Kaidan", "Lucien Flavius", "Nebarra", "Lucifer", "Redcap"],
+    "interactsWith": ["Remiel", "Kaidan", "Lucien Flavius", "Nebarra", "Lucifer", "Redcap", "Taliesin"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/62893"
   },
   {
@@ -169,7 +169,7 @@ export const FOLLOWERS: Follower[] = [
     "race": "Altmer",
     "class": "Mage",
     "mod": "The Thalmor's Shadow",
-    "interactsWith": ["Gore"],
+    "interactsWith": ["Gore", "Remiel", "Xelzaz"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/93413"
   },
   {
