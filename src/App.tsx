@@ -618,7 +618,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* RIGHT BENTO BLOCK (5/12 cols): Live Detail Inspector & Relationship Node Web */}
+          {/* RIGHT BENTO BLOCK (5/12 cols): Live Detail Inspector */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             
             {/* Live profile sheet column block */}
@@ -634,20 +634,20 @@ export default function App() {
               />
             </div>
 
-            {/* Relationship graph visual diagram section mapped dynamically */}
-            <div className="flex flex-col gap-4">
-              <h3 className="font-display font-semibold text-lg tracking-wider text-white">
-                Crosstalk Interaction Web
-              </h3>
-
-              <RelationshipWeb
-                follower={activeFollower}
-                onSelectFollower={handleSelectFollower}
-              />
-            </div>
-
           </div>
 
+        </section>
+
+        {/* Dynamic & Spacious Dialogue Interaction Web spanning full width at the bottom */}
+        <section className="flex flex-col gap-4 mt-2">
+          <h3 className="font-display font-semibold text-lg tracking-wider text-white">
+            Partnership & Crosstalk Interaction Web
+          </h3>
+
+          <RelationshipWeb
+            follower={activeFollower}
+            onSelectFollower={handleSelectFollower}
+          />
         </section>
 
       </main>

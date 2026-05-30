@@ -184,9 +184,9 @@ export default function RelationshipWeb({ follower, onSelectFollower, onClose }:
         </div>
       </div>
 
-      <div className="p-5 flex flex-col xl:flex-row items-center justify-center gap-8">
+      <div className="p-6 flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-10">
         {/* SVG Circle Network */}
-        <div className="relative w-full max-w-[430px] aspect-square flex items-center justify-center bg-[#0D0D10]/40 rounded-full border border-skyrim-border/30 p-2 overflow-hidden shadow-inner">
+        <div className="relative w-full max-w-[480px] aspect-square flex items-center justify-center bg-[#0D0D10]/40 rounded-full border border-skyrim-border/30 p-3 overflow-hidden shadow-inner shrink-0">
           <svg 
             viewBox="0 0 500 500" 
             className="w-full h-full select-none"
@@ -453,10 +453,10 @@ export default function RelationshipWeb({ follower, onSelectFollower, onClose }:
         </div>
 
         {/* Legend & Details Display Panel */}
-        <div className="flex-1 w-full max-w-sm flex flex-col gap-4 text-xs">
+        <div className="flex-1 w-full lg:max-w-xl flex flex-col justify-between gap-5 text-xs">
           
           {/* Active Hover Detail Peek */}
-          <div className="min-h-[195px] bg-black/30 p-4 rounded-xl border border-skyrim-border/75 flex flex-col justify-between backdrop-blur-sm shadow-inner relative overflow-hidden">
+          <div className="flex-1 min-h-[210px] bg-black/30 p-5 rounded-xl border border-skyrim-border/75 flex flex-col justify-between backdrop-blur-sm shadow-inner relative overflow-hidden mb-1">
             <div className="absolute top-0 right-0 w-24 h-24 bg-skyrim-gold/5 rounded-full blur-2xl pointer-events-none" />
             
             <AnimatePresence mode="wait">
@@ -496,10 +496,10 @@ export default function RelationshipWeb({ follower, onSelectFollower, onClose }:
                         </p>
 
                         {subConn.existsInDb ? (
-                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-gray-300 mt-2 bg-black/15 p-2 rounded border border-white/5 font-sans">
-                            <div>Race: <span className="text-gray-100 font-medium truncate block max-w-[90px]">{subConn.details.race}</span></div>
-                            <div>Gender: <span className="text-gray-100 font-medium">{subConn.details.gender}</span></div>
-                            <div className="col-span-2 truncate">Role: <span className="text-gray-100 font-medium">{subConn.details.class}</span></div>
+                          <div className="grid grid-cols-3 gap-x-3 gap-y-1 text-[11px] text-gray-300 mt-2 bg-black/15 p-2.5 rounded border border-white/5 font-sans">
+                            <div>Race: <span className="text-gray-100 font-medium truncate block max-w-[120px]">{subConn.details.race}</span></div>
+                            <div>Gender: <span className="text-gray-100 font-medium truncate block max-w-[80px]">{subConn.details.gender}</span></div>
+                            <div>Role: <span className="text-gray-100 font-medium truncate block max-w-[140px]">{subConn.details.class}</span></div>
                           </div>
                         ) : (
                           <p className="text-gray-500 italic text-[11px] py-1">
@@ -563,10 +563,10 @@ export default function RelationshipWeb({ follower, onSelectFollower, onClose }:
                         </p>
 
                         {conn.existsInDb ? (
-                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-gray-300 mt-2 bg-black/15 p-2 rounded border border-white/5 font-sans">
-                            <div>Race: <span className="text-gray-100 font-medium truncate block max-w-[90px]">{conn.details.race}</span></div>
-                            <div>Gender: <span className="text-gray-100 font-medium">{conn.details.gender}</span></div>
-                            <div className="col-span-2 truncate font-mono">Pack: <span className="text-gray-200 font-sans">{conn.details.mod}</span></div>
+                          <div className="grid grid-cols-3 gap-x-3 gap-y-1 text-[11px] text-gray-300 mt-2 bg-black/15 p-2.5 rounded border border-white/5 font-sans">
+                            <div>Race: <span className="text-gray-100 font-medium truncate block max-w-[120px]">{conn.details.race}</span></div>
+                            <div>Gender: <span className="text-gray-100 font-medium truncate block max-w-[80px]">{conn.details.gender}</span></div>
+                            <div className="truncate">Pack: <span className="text-gray-200 font-sans text-[10px] block truncate max-w-[140px]" title={conn.details.mod}>{conn.details.mod}</span></div>
                           </div>
                         ) : (
                           <p className="text-gray-500 italic text-[11px] py-1">
