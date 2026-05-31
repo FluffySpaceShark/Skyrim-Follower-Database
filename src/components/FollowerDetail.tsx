@@ -93,7 +93,20 @@ export default function FollowerDetail({ follower, onSelectFollower, followersLi
             <Swords className="w-4 h-4 text-skyrim-gold mt-0.5" />
             <div>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">In-Game Role / Class</p>
-              <p className="text-sm font-medium text-gray-200 mt-0.5">{follower.class || '—'}</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {follower.class ? (
+                  follower.class.split(/\s*\/\s*/).map(tag => (
+                    <span 
+                      key={tag} 
+                      className="px-2 py-0.5 text-[10.5px] font-semibold rounded bg-[#2e261d] text-skyrim-gold-light border border-skyrim-gold/30 shadow-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm font-medium text-gray-200">—</span>
+                )}
+              </div>
             </div>
           </div>
 

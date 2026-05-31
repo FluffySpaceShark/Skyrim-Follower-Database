@@ -28,12 +28,16 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGender, setSelectedGender] = useState('');
   const [selectedRaces, setSelectedRaces] = useState<string[]>([]);
+  const [excludedRaces, setExcludedRaces] = useState<string[]>([]);
   const [selectedMods, setSelectedMods] = useState<string[]>([]);
   const [excludedMods, setExcludedMods] = useState<string[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  const [excludedClasses, setExcludedClasses] = useState<string[]>([]);
   const [interactFilters, setInteractFilters] = useState<string[]>([]);
   const [globalFilterLogic, setGlobalFilterLogic] = useState<'and' | 'or'>('and');
   const [raceMatchMode, setRaceMatchMode] = useState<'and' | 'or'>('or');
   const [modMatchMode, setModMatchMode] = useState<'and' | 'or'>('or');
+  const [classMatchMode, setClassMatchMode] = useState<'and' | 'or'>('or');
   const [interactMatchMode, setInteractMatchMode] = useState<'and' | 'or'>('or');
   
   // Selected Follower details state (default to Inigo or first item)
@@ -49,13 +53,25 @@ export default function App() {
   // References to highlight elements in table
   const selectedRowRef = useRef<HTMLTableRowElement | null>(null);
 
-  // Find all available races and mods dynamically for the select dropdowns
+  // Find all available races, mods, and classes dynamically for selection
   const races = useMemo(() => {
     return Array.from(new Set(FOLLOWERS.map(f => f.race))).sort();
   }, []);
 
   const mods = useMemo(() => {
     return Array.from(new Set(FOLLOWERS.map(f => f.mod))).sort();
+  }, []);
+
+  const classes = useMemo(() => {
+    const set = new Set<string>();
+    FOLLOWERS.forEach(f => {
+      if (f.class) {
+        f.class.split(/\s*\/\s*/).forEach(c => {
+          if (c.trim()) set.add(c.trim());
+        });
+      }
+    });
+    return Array.from(set).sort();
   }, []);
 
   const followerNames = useMemo(() => {
@@ -65,16 +81,28 @@ export default function App() {
   // Filter & Sort core logic
   const filteredFollowers = useMemo(() => {
     return FOLLOWERS.filter(f => {
-      // Excluded mods override EVERYTHING: if a follower is from an excluded mod, they are out!
+      // Excluded mods override EVERYTHING
       if (excludedMods.length > 0 && excludedMods.includes(f.mod)) {
         return false;
       }
 
-      // Check active filters counts
+      // Excluded races override EVERYTHING (allow filtering out races as requested)
+      if (excludedRaces.length > 0 && excludedRaces.includes(f.race)) {
+        return false;
+      }
+
+      // Excluded classes override EVERYTHING (allow filtering out classes of tags)
+      const followerClasses = f.class ? f.class.split(/\s*\/\s*/).map(c => c.trim()) : [];
+      if (excludedClasses.length > 0 && excludedClasses.some(c => followerClasses.includes(c))) {
+        return false;
+      }
+
+      // Check active filters status
       const activeKeyword = searchQuery.trim() !== '';
       const activeGender = !!selectedGender;
       const activeRace = selectedRaces.length > 0;
       const activeMod = selectedMods.length > 0;
+      const activeClass = selectedClasses.length > 0;
       const activeInteracts = interactFilters.length > 0;
 
       // 1. Text Search matching
@@ -113,7 +141,17 @@ export default function App() {
         }
       }
 
-      // 5. Interactions matching (multi-select)
+      // 5. Class matching (multi-select for class tags)
+      let matchesClass = false;
+      if (activeClass) {
+        if (classMatchMode === 'and') {
+          matchesClass = selectedClasses.every(c => followerClasses.includes(c));
+        } else {
+          matchesClass = selectedClasses.some(c => followerClasses.includes(c));
+        }
+      }
+
+      // 6. Interactions matching (multi-select)
       let matchesInteracts = false;
       if (activeInteracts) {
         const matchesOption = (filterItem: string) => {
@@ -133,12 +171,13 @@ export default function App() {
         }
       }
 
-      // Calculate total match conditions
+      // Calculate total active category count
       const activeFiltersCount = 
         (activeKeyword ? 1 : 0) +
         (activeGender ? 1 : 0) +
         (activeRace ? 1 : 0) +
         (activeMod ? 1 : 0) +
+        (activeClass ? 1 : 0) +
         (activeInteracts ? 1 : 0);
 
       if (activeFiltersCount === 0) {
@@ -151,6 +190,7 @@ export default function App() {
                (activeGender && matchesGender) ||
                (activeRace && matchesRace) ||
                (activeMod && matchesMod) ||
+               (activeClass && matchesClass) ||
                (activeInteracts && matchesInteracts);
       } else {
         // AND across categories: must match ALL active filters
@@ -158,6 +198,7 @@ export default function App() {
                (!activeGender || matchesGender) &&
                (!activeRace || matchesRace) &&
                (!activeMod || matchesMod) &&
+               (!activeClass || matchesClass) &&
                (!activeInteracts || matchesInteracts);
       }
     }).sort((a, b) => {
@@ -171,8 +212,9 @@ export default function App() {
       }
     });
   }, [
-    searchQuery, selectedGender, selectedRaces, selectedMods, excludedMods, interactFilters,
-    globalFilterLogic, raceMatchMode, modMatchMode, interactMatchMode,
+    searchQuery, selectedGender, selectedRaces, excludedRaces, selectedMods, excludedMods,
+    selectedClasses, excludedClasses, interactFilters,
+    globalFilterLogic, raceMatchMode, modMatchMode, classMatchMode, interactMatchMode,
     sortField, sortDirection
   ]);
 
@@ -193,12 +235,16 @@ export default function App() {
     setSearchQuery('');
     setSelectedGender('');
     setSelectedRaces([]);
+    setExcludedRaces([]);
     setSelectedMods([]);
     setExcludedMods([]);
+    setSelectedClasses([]);
+    setExcludedClasses([]);
     setInteractFilters([]);
     setGlobalFilterLogic('and');
     setRaceMatchMode('or');
     setModMatchMode('or');
+    setClassMatchMode('or');
     setInteractMatchMode('or');
   };
 
@@ -238,7 +284,16 @@ export default function App() {
     }
   }, [selectedFollowerName]);
 
-  const hasActiveFilters = searchQuery || selectedGender || selectedRaces.length > 0 || selectedMods.length > 0 || excludedMods.length > 0 || interactFilters.length > 0;
+  const hasActiveFilters = 
+    !!(searchQuery || 
+    selectedGender || 
+    selectedRaces.length > 0 || 
+    excludedRaces.length > 0 ||
+    selectedMods.length > 0 || 
+    excludedMods.length > 0 || 
+    selectedClasses.length > 0 || 
+    excludedClasses.length > 0 || 
+    interactFilters.length > 0);
 
   return (
     <div className="min-h-screen bg-skyrim-bg text-gray-200 selection:bg-skyrim-gold selection:text-black" id="skyrim-follower-app">
@@ -306,251 +361,419 @@ export default function App() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            
-            {/* Filter 1: Universal Keyword */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="search-input" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
-                Keyword Search
-              </label>
-              <div className="relative">
-                <input
-                  id="search-input"
-                  type="text"
-                  placeholder="e.g. Inigo, Archer, Nord..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold focus:ring-1 focus:ring-skyrim-gold rounded-lg px-3 py-1.5 pl-8 text-xs text-gray-100 placeholder-gray-500 transition-all outline-none"
-                />
-                <Search className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-1/2 transform -translate-y-1/2" />
+          <div className="flex flex-col gap-6">
+            {/* Inclusive Criteria Row */}
+            <div>
+              <h3 className="text-[10px] text-skyrim-gold/80 font-bold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-skyrim-gold" /> Filter Criteria (Inclusion)
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                {/* Filter 1: Universal Keyword */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="search-input" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Keyword Search
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="search-input"
+                      type="text"
+                      placeholder="e.g. Inigo, Archer, Nord..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold focus:ring-1 focus:ring-skyrim-gold rounded-lg px-3 py-1.5 pl-8 text-xs text-gray-100 placeholder-gray-500 transition-all outline-none"
+                    />
+                    <Search className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-1/2 transform -translate-y-1/2" />
+                  </div>
+                </div>
+
+                {/* Filter 2: Gender Selector */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="gender-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Gender
+                  </label>
+                  <select
+                    id="gender-select"
+                    value={selectedGender}
+                    onChange={(e) => setSelectedGender(e.target.value)}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="">All Genders</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+
+                {/* Filter 3: Race Selection */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="race-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Race (Species)
+                  </label>
+                  <select
+                    id="race-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !selectedRaces.includes(val)) {
+                        setSelectedRaces([...selectedRaces, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="">Include Races...</option>
+                    {races.map(raceString => (
+                      <option 
+                        key={`race-opt-${raceString}`} 
+                        value={raceString}
+                        disabled={selectedRaces.includes(raceString)}
+                        className="text-gray-200 disabled:text-gray-600"
+                      >
+                        {selectedRaces.includes(raceString) ? `✓ ${raceString}` : raceString}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Race badges micro-list */}
+                  {selectedRaces.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {selectedRaces.map(raceName => (
+                        <span 
+                          key={`race-badge-${raceName}`}
+                          className="inline-flex items-center gap-1 bg-amber-950/20 text-[10px] text-skyrim-gold-light border border-skyrim-border/50 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{raceName}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedRaces(selectedRaces.filter(r => r !== raceName))}
+                            className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Filter 3.1: Combat Class tags selection (requested: make class section tags) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="class-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Combat Class Tags
+                  </label>
+                  <select
+                    id="class-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !selectedClasses.includes(val)) {
+                        setSelectedClasses([...selectedClasses, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="">Include Classes...</option>
+                    {classes.map(classString => (
+                      <option 
+                        key={`class-opt-${classString}`} 
+                        value={classString}
+                        disabled={selectedClasses.includes(classString)}
+                        className="text-gray-200 disabled:text-gray-600"
+                      >
+                        {selectedClasses.includes(classString) ? `✓ ${classString}` : classString}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Class badges micro-list */}
+                  {selectedClasses.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {selectedClasses.map(className => (
+                        <span 
+                          key={`class-badge-${className}`}
+                          className="inline-flex items-center gap-1 bg-blue-950/30 text-[10px] text-sky-305 border border-sky-900/30 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{className}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedClasses(selectedClasses.filter(c => c !== className))}
+                            className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Filter 4: Origin Mod file */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="mod-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Source Mod / Quest
+                  </label>
+                  <select
+                    id="mod-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !selectedMods.includes(val)) {
+                        setSelectedMods([...selectedMods, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="">Include Mods...</option>
+                    {mods.map(modString => (
+                      <option 
+                        key={`mod-opt-${modString}`} 
+                        value={modString}
+                        disabled={selectedMods.includes(modString)}
+                        className="text-gray-205 disabled:text-gray-600"
+                      >
+                        {selectedMods.includes(modString) ? `✓ ${modString}` : modString}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Mods badges micro-list */}
+                  {selectedMods.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {selectedMods.map(modName => (
+                        <span 
+                          key={`mod-badge-${modName}`}
+                          className="inline-flex items-center gap-1 bg-[#1a1921] text-[10px] text-gray-300 border border-skyrim-border/50 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{modName}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedMods(selectedMods.filter(m => m !== modName))}
+                            className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Filter 5: Dialogue Interaction Links */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="interact-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Interacts With
+                  </label>
+                  <select
+                    id="interact-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !interactFilters.includes(val)) {
+                        setInteractFilters([...interactFilters, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="">Select Banter...</option>
+                    <option 
+                      value="__has_any__"
+                      disabled={interactFilters.includes('__has_any__')}
+                      className="text-skyrim-gold disabled:text-gray-600"
+                    >
+                      Has any registered banter
+                    </option>
+                    <option disabled>── Filter by companion ──</option>
+                    {followerNames.map(fName => (
+                      <option 
+                        key={`interact-opt-${fName}`} 
+                        value={fName}
+                        disabled={interactFilters.includes(fName)}
+                        className="text-gray-205 disabled:text-gray-600"
+                      >
+                        {interactFilters.includes(fName) ? `✓ Mentions ${fName}` : `Mentions ${fName}`}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Interaction badges micro-list */}
+                  {interactFilters.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {interactFilters.map(filterItem => (
+                        <span 
+                          key={`interact-badge-${filterItem}`}
+                          className="inline-flex items-center gap-1 bg-[#151c22] text-[10px] text-sky-305 border border-sky shadow-sm px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">
+                            {filterItem === '__has_any__' ? 'Has Banter' : `Talks with ${filterItem}`}
+                          </span>
+                          <button 
+                            type="button" 
+                            onClick={() => setInteractFilters(interactFilters.filter(i => i !== filterItem))}
+                            className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
 
-            {/* Filter 2: Gender Selector */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="gender-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
-                Gender
-              </label>
-              <select
-                id="gender-select"
-                value={selectedGender}
-                onChange={(e) => setSelectedGender(e.target.value)}
-                className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
-              >
-                <option value="">All Genders</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-            </div>
-
-            {/* Filter 3: Race Selection */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="race-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
-                Race
-              </label>
-              <select
-                id="race-select"
-                value=""
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val && !selectedRaces.includes(val)) {
-                    setSelectedRaces([...selectedRaces, val]);
-                  }
-                }}
-                className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
-              >
-                <option value="">Select Races...</option>
-                {races.map(raceString => (
-                  <option 
-                    key={raceString} 
-                    value={raceString}
-                    disabled={selectedRaces.includes(raceString)}
-                    className="text-gray-205 disabled:text-gray-600"
+            {/* Strict Exclusionary Overrides */}
+            <div className="border-t border-skyrim-border/30 pt-4">
+              <h3 className="text-[10px] text-rose-400 font-bold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> STRICT Overrides (Exclusion / Filters Out)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                {/* Exclude Races (requested: as well as filtering out races as well) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="exclude-race-select" className="text-[11px] text-rose-450 font-bold uppercase tracking-wider">
+                    Exclude Races
+                  </label>
+                  <select
+                    id="exclude-race-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !excludedRaces.includes(val)) {
+                        setExcludedRaces([...excludedRaces, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-rose-500/50 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-rose-200 transition-all outline-none cursor-pointer"
                   >
-                    {selectedRaces.includes(raceString) ? `✓ ${raceString}` : raceString}
-                  </option>
-                ))}
-              </select>
-              {/* Race badges micro-list */}
-              {selectedRaces.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
-                  {selectedRaces.map(raceName => (
-                    <span 
-                      key={`race-badge-${raceName}`}
-                      className="inline-flex items-center gap-1 bg-amber-950/20 text-[10px] text-skyrim-gold-light border border-skyrim-border/50 px-1.5 py-0.5 rounded"
-                    >
-                      <span className="truncate max-w-[130px]">{raceName}</span>
-                      <button 
-                        type="button" 
-                        onClick={() => setSelectedRaces(selectedRaces.filter(r => r !== raceName))}
-                        className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                    <option value="" className="text-gray-400">Exclude race species...</option>
+                    {races.map(raceString => (
+                      <option 
+                        key={`exclude-race-${raceString}`} 
+                        value={raceString}
+                        disabled={excludedRaces.includes(raceString)}
+                        className="text-gray-200 disabled:text-gray-600"
                       >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
+                        {excludedRaces.includes(raceString) ? `✓ ${raceString} (Excluded)` : `Exclude ${raceString}`}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Excluded races badges */}
+                  {excludedRaces.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {excludedRaces.map(raceName => (
+                        <span 
+                          key={`exclude-race-badge-${raceName}`}
+                          className="inline-flex items-center gap-1 bg-rose-950/40 text-[10px] text-rose-300 border border-rose-900/40 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{raceName}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setExcludedRaces(excludedRaces.filter(r => r !== raceName))}
+                            className="text-rose-400 hover:text-rose-200 font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Filter 4: Origin Mod file */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="mod-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
-                Source Mod / Quest
-              </label>
-              <select
-                id="mod-select"
-                value=""
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val && !selectedMods.includes(val)) {
-                    setSelectedMods([...selectedMods, val]);
-                  }
-                }}
-                className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
-              >
-                <option value="">Select Mods...</option>
-                {mods.map(modString => (
-                  <option 
-                    key={modString} 
-                    value={modString}
-                    disabled={selectedMods.includes(modString)}
-                    className="text-gray-205 disabled:text-gray-600"
+                {/* Exclude Classes (requested: filter classes in or out) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="exclude-class-select" className="text-[11px] text-rose-455 font-bold uppercase tracking-wider">
+                    Exclude Classes
+                  </label>
+                  <select
+                    id="exclude-class-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !excludedClasses.includes(val)) {
+                        setExcludedClasses([...excludedClasses, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-rose-500/50 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-rose-200 transition-all outline-none cursor-pointer"
                   >
-                    {selectedMods.includes(modString) ? `✓ ${modString}` : modString}
-                  </option>
-                ))}
-              </select>
-              {/* Mods badges micro-list */}
-              {selectedMods.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
-                  {selectedMods.map(modName => (
-                    <span 
-                      key={`mod-badge-${modName}`}
-                      className="inline-flex items-center gap-1 bg-[#1a1921] text-[10px] text-gray-300 border border-skyrim-border/50 px-1.5 py-0.5 rounded"
-                    >
-                      <span className="truncate max-w-[130px]">{modName}</span>
-                      <button 
-                        type="button" 
-                        onClick={() => setSelectedMods(selectedMods.filter(m => m !== modName))}
-                        className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                    <option value="" className="text-gray-400">Exclude class roles...</option>
+                    {classes.map(classString => (
+                      <option 
+                        key={`exclude-class-${classString}`} 
+                        value={classString}
+                        disabled={excludedClasses.includes(classString)}
+                        className="text-gray-200 disabled:text-gray-600"
                       >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
+                        {excludedClasses.includes(classString) ? `✓ ${classString} (Excluded)` : `Exclude ${classString}`}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Excluded classes badges */}
+                  {excludedClasses.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {excludedClasses.map(className => (
+                        <span 
+                          key={`exclude-class-badge-${className}`}
+                          className="inline-flex items-center gap-1 bg-rose-950/40 text-[10px] text-rose-300 border border-rose-900/40 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{className}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setExcludedClasses(excludedClasses.filter(c => c !== className))}
+                            className="text-rose-400 hover:text-rose-200 font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Filter 4.1: Exclude Mod Filter (Supports Multiple) */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="exclude-mod-select" className="text-[11px] text-rose-400 font-bold uppercase tracking-wider">
-                Exclude Mods / Packs
-              </label>
-              <select
-                id="exclude-mod-select"
-                value=""
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val && !excludedMods.includes(val)) {
-                    setExcludedMods([...excludedMods, val]);
-                  }
-                }}
-                className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-rose-500/50 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-rose-200 transition-all outline-none cursor-pointer"
-              >
-                <option value="" className="text-gray-400">Exclude a mod pack...</option>
-                {mods.map(modString => (
-                  <option 
-                    key={`exclude-${modString}`} 
-                    value={modString}
-                    disabled={excludedMods.includes(modString)}
-                    className="text-gray-200 disabled:text-gray-600"
+                {/* Exclude Mods */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="exclude-mod-select" className="text-[11px] text-rose-455 font-bold uppercase tracking-wider">
+                    Exclude Mods / Packs
+                  </label>
+                  <select
+                    id="exclude-mod-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !excludedMods.includes(val)) {
+                        setExcludedMods([...excludedMods, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-rose-500/50 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-rose-200 transition-all outline-none cursor-pointer"
                   >
-                    {excludedMods.includes(modString) ? `✓ ${modString} (Excluded)` : `Exclude ${modString}`}
-                  </option>
-                ))}
-              </select>
-              {/* Exclusions Micro-list */}
-              {excludedMods.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
-                  {excludedMods.map(modName => (
-                    <span 
-                      key={`badge-${modName}`}
-                      className="inline-flex items-center gap-1 bg-rose-950/40 text-[10px] text-rose-300 border border-rose-900/40 px-1.5 py-0.5 rounded"
-                    >
-                      <span className="truncate max-w-[130px]">{modName}</span>
-                      <button 
-                        type="button" 
-                        onClick={() => setExcludedMods(excludedMods.filter(m => m !== modName))}
-                        className="text-rose-450 hover:text-rose-200 font-bold focus:outline-none"
+                    <option value="" className="text-gray-400">Exclude a mod pack...</option>
+                    {mods.map(modString => (
+                      <option 
+                        key={`exclude-mod-${modString}`} 
+                        value={modString}
+                        disabled={excludedMods.includes(modString)}
+                        className="text-gray-200 disabled:text-gray-600"
                       >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
+                        {excludedMods.includes(modString) ? `✓ ${modString} (Excluded)` : `Exclude ${modString}`}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Exclusions Micro-list */}
+                  {excludedMods.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {excludedMods.map(modName => (
+                        <span 
+                          key={`badge-${modName}`}
+                          className="inline-flex items-center gap-1 bg-rose-950/40 text-[10px] text-rose-300 border border-rose-900/40 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{modName}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setExcludedMods(excludedMods.filter(m => m !== modName))}
+                            className="text-rose-400 hover:text-rose-200 font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Filter 5: Dialogue Interaction Links */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="interact-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
-                Interacts With
-              </label>
-              <select
-                id="interact-select"
-                value=""
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val && !interactFilters.includes(val)) {
-                    setInteractFilters([...interactFilters, val]);
-                  }
-                }}
-                className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
-              >
-                <option value="">Select Banter...</option>
-                <option 
-                  value="__has_any__"
-                  disabled={interactFilters.includes('__has_any__')}
-                  className="text-skyrim-gold disabled:text-gray-600"
-                >
-                  Has any registered banter
-                </option>
-                <option disabled>── Filter by companion ──</option>
-                {followerNames.map(fName => (
-                  <option 
-                    key={fName} 
-                    value={fName}
-                    disabled={interactFilters.includes(fName)}
-                    className="text-gray-205 disabled:text-gray-600"
-                  >
-                    {interactFilters.includes(fName) ? `✓ Mentions ${fName}` : `Mentions ${fName}`}
-                  </option>
-                ))}
-              </select>
-              {/* Interaction badges micro-list */}
-              {interactFilters.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
-                  {interactFilters.map(filterItem => (
-                    <span 
-                      key={`interact-badge-${filterItem}`}
-                      className="inline-flex items-center gap-1 bg-[#151c22] text-[10px] text-sky-300 border border-sky-900/30 px-1.5 py-0.5 rounded"
-                    >
-                      <span className="truncate max-w-[130px]">
-                        {filterItem === '__has_any__' ? 'Has Banter' : `Talks with ${filterItem}`}
-                      </span>
-                      <button 
-                        type="button" 
-                        onClick={() => setInteractFilters(interactFilters.filter(i => i !== filterItem))}
-                        className="text-gray-400 hover:text-white font-bold focus:outline-none"
-                      >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+              </div>
             </div>
 
           </div>
@@ -570,7 +793,7 @@ export default function App() {
                       ? 'bg-skyrim-gold/20 text-skyrim-gold-light border border-skyrim-gold/20 shadow-sm font-semibold'
                       : 'text-gray-400 hover:text-gray-205 border border-transparent hover:bg-stone-800/30'
                   }`}
-                  title="Follower must match ALL selected filters (Keyword AND Gender AND Races AND Mods AND Banter)"
+                  title="Follower must match ALL selected filters (Keyword AND Gender AND Races AND Classes AND Mods AND Banter)"
                 >
                   Match ALL Categories (AND)
                 </button>
@@ -582,7 +805,7 @@ export default function App() {
                       ? 'bg-skyrim-gold/20 text-skyrim-gold-light border border-skyrim-gold/20 shadow-sm font-semibold'
                       : 'text-gray-400 hover:text-gray-205 border border-transparent hover:bg-stone-800/30'
                   }`}
-                  title="Follower matches if they meet AT LEAST ONE of your category filters (Gender OR Races OR Mods OR Banter)"
+                  title="Follower matches if they meet AT LEAST ONE of your active criteria filters (Gender OR Races OR Classes OR Mods OR Banter)"
                 >
                   Match ANY Category (OR)
                 </button>
@@ -590,12 +813,12 @@ export default function App() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <span className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider shrink-0 text-gray-450">
+              <span className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider shrink-0">
                 Multi-Select Logic:
               </span>
               
               {/* Races Match Mode Toggle */}
-              <div className="flex items-center gap-1.5 bg-skyrim-surf2/50 px-2 py-1 rounded border border-skyrim-border/40 hover:border-gray-600 transition-colors cursor-help" title="ANY allows followers matching at least one selected race; ALL requires matching all selected races (results in empty list if you select multiple since a follower only has one race).">
+              <div className="flex items-center gap-1.5 bg-skyrim-surf2/50 px-2 py-1 rounded border border-skyrim-border/40 hover:border-gray-600 transition-colors cursor-help" title="ANY allows followers matching at least one selected race; ALL requires matching all selected races.">
                 <span className="text-gray-400 text-[10px] uppercase font-medium">Races:</span>
                 <button
                   type="button"
@@ -607,6 +830,22 @@ export default function App() {
                   }`}
                 >
                   {raceMatchMode === 'and' ? 'ALL (AND)' : 'ANY (OR)'}
+                </button>
+              </div>
+
+              {/* Classes Match Mode Toggle */}
+              <div className="flex items-center gap-1.5 bg-skyrim-surf2/50 px-2 py-1 rounded border border-skyrim-border/40 hover:border-gray-600 transition-colors cursor-help" title="ANY shows followers matching at least one selected class; ALL requires matching all of your selected class tags (for dual/triple classes).">
+                <span className="text-gray-400 text-[10px] uppercase font-medium">Classes:</span>
+                <button
+                  type="button"
+                  onClick={() => setClassMatchMode(prev => prev === 'and' ? 'or' : 'and')}
+                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider transition-all select-none ${
+                    classMatchMode === 'and'
+                      ? 'bg-amber-950/45 text-amber-300 border border-amber-900/40 shadow-sm'
+                      : 'bg-stone-800 text-stone-400 hover:text-gray-200'
+                  }`}
+                >
+                  {classMatchMode === 'and' ? 'ALL (AND)' : 'ANY (OR)'}
                 </button>
               </div>
 
@@ -646,7 +885,7 @@ export default function App() {
 
           {/* Active Filtering Toast Badges */}
           {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-skyrim-border/30 text-xs text-xs">
+            <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-skyrim-border/30 text-xs">
               <span className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider">Active:</span>
               {searchQuery && (
                 <span className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-300 flex items-center gap-1">
@@ -659,7 +898,7 @@ export default function App() {
                 </span>
               )}
               {selectedRaces.map(raceName => (
-                <span key={`active-race-${raceName}`} className="bg-skyrim-surf3 border border-emerald-900/20 px-2 py-0.5 rounded text-skyrim-gold-light flex items-center gap-1.5">
+                <span key={`active-race-${raceName}`} className="bg-skyrim-surf3 border border-emerald-950/40 px-2 py-0.5 rounded text-skyrim-gold-light flex items-center gap-1.5 shadow-sm">
                   Race: {raceName}
                   <button 
                     onClick={() => setSelectedRaces(prev => prev.filter(r => r !== raceName))}
@@ -670,8 +909,44 @@ export default function App() {
                   </button>
                 </span>
               ))}
+              {excludedRaces.map(raceName => (
+                <span key={`active-ex-race-${raceName}`} className="bg-rose-950/40 border border-rose-900/40 px-2 py-0.5 rounded text-rose-350 flex items-center gap-1.5 shadow-sm">
+                  Excluded Race: {raceName}
+                  <button 
+                    onClick={() => setExcludedRaces(prev => prev.filter(r => r !== raceName))}
+                    className="hover:text-white ml-0.5 font-bold text-rose-450"
+                    title="Remove Exclusion"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+              {selectedClasses.map(className => (
+                <span key={`active-class-${className}`} className="bg-skyrim-surf3 border border-sky-950/50 px-2 py-0.5 rounded text-sky-305 flex items-center gap-1.5 shadow-sm">
+                  Class: {className}
+                  <button 
+                    onClick={() => setSelectedClasses(prev => prev.filter(c => c !== className))}
+                    className="hover:text-white ml-0.5 font-bold text-sky-400"
+                    title="Remove Filter"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+              {excludedClasses.map(className => (
+                <span key={`active-ex-class-${className}`} className="bg-rose-950/40 border border-rose-900/40 px-2 py-0.5 rounded text-rose-350 flex items-center gap-1.5 shadow-sm">
+                  Excluded Class: {className}
+                  <button 
+                    onClick={() => setExcludedClasses(prev => prev.filter(c => c !== className))}
+                    className="hover:text-white ml-0.5 font-bold text-rose-450"
+                    title="Remove Exclusion"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
               {selectedMods.map(modName => (
-                <span key={`active-mod-${modName}`} className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-300 flex items-center gap-1.5">
+                <span key={`active-mod-${modName}`} className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-300 flex items-center gap-1.5 shadow-sm">
                   Source: {modName}
                   <button 
                     onClick={() => setSelectedMods(prev => prev.filter(m => m !== modName))}
@@ -683,8 +958,8 @@ export default function App() {
                 </span>
               ))}
               {excludedMods.map(modName => (
-                <span key={`active-ex-${modName}`} className="bg-rose-950/45 border border-rose-900/40 px-2 py-0.5 rounded text-rose-300 flex items-center gap-1.5">
-                  Excluded: {modName}
+                <span key={`active-ex-mod-${modName}`} className="bg-rose-950/40 border border-rose-900/40 px-2 py-0.5 rounded text-rose-350 flex items-center gap-1.5 shadow-sm">
+                  Excluded Mod: {modName}
                   <button 
                     onClick={() => setExcludedMods(prev => prev.filter(m => m !== modName))}
                     className="hover:text-white ml-0.5 font-bold text-rose-450"
@@ -695,7 +970,7 @@ export default function App() {
                 </span>
               ))}
               {interactFilters.map(filterItem => (
-                <span key={`active-interact-${filterItem}`} className="bg-[#121c22] border border-sky-900/30 px-2 py-0.5 rounded text-sky-300 flex items-center gap-1.5">
+                <span key={`active-interact-${filterItem}`} className="bg-[#121c22] border border-sky-900/30 px-2 py-0.5 rounded text-sky-305 flex items-center gap-1.5 shadow-sm">
                   {filterItem === '__has_any__' ? 'Banter: Any interaction' : `Talks with: ${filterItem}`}
                   <button 
                     onClick={() => setInteractFilters(prev => prev.filter(i => i !== filterItem))}

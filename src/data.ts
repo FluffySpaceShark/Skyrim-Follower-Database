@@ -14,7 +14,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Auri",
     "gender": "Female",
     "race": "Bosmer",
-    "class": "Ranger",
+    "class": "Ranger / Archer",
     "mod": "Auri - Song of the Green",
     "interactsWith": ["Inigo", "Lucien Flavius", "Kaidan", "Vilja", "Remiel", "Gore", "Rumarin", "Zora Fair-Child", "Daenlyn"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/11278"
@@ -50,7 +50,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Xelzaz",
     "gender": "Male",
     "race": "Argonian",
-    "class": "Mage / Spellsword",
+    "class": "Mage / Spellsword / Alchemist",
     "mod": "Xelzaz",
     "interactsWith": ["Remiel", "Kaidan", "Lucien Flavius", "Nebarra", "Lucifer", "Redcap", "Taliesin"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/62893"
@@ -59,7 +59,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Lucifer",
     "gender": "Male",
     "race": "Argonian",
-    "class": "Rogue / Archer",
+    "class": "Rogue / Archer / Scholar",
     "mod": "Lucifer - Custom Voiced Follower",
     "interactsWith": ["Inigo", "Nebarra", "Remiel", "Xelzaz", "Khash"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/44967"
@@ -68,7 +68,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Khash",
     "gender": "Female",
     "race": "Argonian",
-    "class": "Warrior",
+    "class": "Ranger / Archer",
     "mod": "Khash the Argonian (SidekicksOfTamriel)",
     "interactsWith": ["Caryalind Thallery", "Lucifer"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/40122"
@@ -77,7 +77,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Caryalind Thallery",
     "gender": "Male",
     "race": "Altmer",
-    "class": "Mage",
+    "class": "Mage / Spellsword",
     "mod": "Caryalind Thallery (SidekicksOfTamriel)",
     "interactsWith": ["Khash"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/55477"
@@ -86,7 +86,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Hoth",
     "gender": "Male",
     "race": "Nord",
-    "class": "Warrior",
+    "class": "Warrior / Bounty Hunter",
     "mod": "Hoth",
     "interactsWith": ["Inigo", "Lucien Flavius"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/16137"
@@ -95,7 +95,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Sofia",
     "gender": "Female",
     "race": "Nord",
-    "class": "Warrior / Rogue",
+    "class": "Spellsword / Rogue",
     "mod": "Sofia - The Funny Companion",
     "interactsWith": ["Inigo"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2180"
@@ -104,7 +104,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Recorder",
     "gender": "Female",
     "race": "Unknown",
-    "class": "Rogue",
+    "class": "Rogue / Scholar",
     "mod": "Recorder - Buried Records",
     "interactsWith": ["Inigo", "Ambriel", "Viga"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/4718"
@@ -122,7 +122,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Nebarra",
     "gender": "Male",
     "race": "Altmer",
-    "class": "Warrior",
+    "class": "Warrior / Mercenary",
     "mod": "Nebarra",
     "interactsWith": ["Lucifer", "Skeever", "Xelzaz"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/42343"
@@ -149,7 +149,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Vilja",
     "gender": "Female",
     "race": "Nord",
-    "class": "Mage / Bard",
+    "class": "Bard / Healer / Alchemist",
     "mod": "Vilja in Skyrim",
     "interactsWith": ["Inigo", "Auri"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/6722"
@@ -158,7 +158,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Thogra Gra-Mugur",
     "gender": "Female",
     "race": "Orc",
-    "class": "Warrior",
+    "class": "Warrior / Berserker",
     "mod": "Thogra Gra-Mugur",
     "interactsWith": ["Remiel"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/120007"
@@ -176,7 +176,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Redcap",
     "gender": "Male",
     "race": "Riekling",
-    "class": "Warrior",
+    "class": "Warrior / Scout",
     "mod": "Redcap the Riekling",
     "interactsWith": ["Inigo", "Xelzaz", "Remiel", "Nessa"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/73441"
@@ -230,7 +230,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Ma'kara",
     "gender": "Female",
     "race": "Khajiit",
-    "class": "Warrior",
+    "class": "Rogue / Dual-Wielder",
     "mod": "Khajiit Will Follow",
     "interactsWith": ["Bikhai", "Nanak", "S'ariq"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227"
@@ -239,7 +239,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Nanak",
     "gender": "Male",
     "race": "Khajiit",
-    "class": "Mage",
+    "class": "Mage / Scholar",
     "mod": "Khajiit Will Follow",
     "interactsWith": ["Bikhai", "Ma'kara", "S'ariq"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227"
@@ -248,7 +248,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "S'ariq",
     "gender": "Male",
     "race": "Khajiit",
-    "class": "Rogue / Archer",
+    "class": "Rogue / Thief",
     "mod": "Khajiit Will Follow",
     "interactsWith": ["Bikhai", "Ma'kara", "Nanak"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227"
@@ -266,7 +266,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Darion",
     "gender": "Male",
     "race": "Imperial",
-    "class": "Warrior",
+    "class": "Rogue / Swashbuckler",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Elyndra", "Garrett", "Lyra", "Mareen", "Nadina", "Teryn", "Valyen", "Zorya"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
@@ -275,7 +275,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Elyndra",
     "gender": "Female",
     "race": "Dunmer",
-    "class": "Mage / Spellsword",
+    "class": "Spellsword / Knight",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Garrett", "Lyra", "Mareen", "Nadina", "Teryn", "Valyen", "Zorya", "Lucien Flavius"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
@@ -356,7 +356,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Anum-La",
     "gender": "Female",
     "race": "Argonian",
-    "class": "Warrior",
+    "class": "Warrior / Knight",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Zora Fair-Child", "Rumarin", "Gorr", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn", "Remiel"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
@@ -365,7 +365,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Zora Fair-Child",
     "gender": "Female",
     "race": "Imperial",
-    "class": "Ranger",
+    "class": "Warrior / Dual-Wielder",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Rumarin", "Gorr", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn", "Auri", "Remiel"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
@@ -383,7 +383,7 @@ export const FOLLOWERS: Follower[] = [
     "follower": "Gorr",
     "gender": "Male",
     "race": "Redguard",
-    "class": "Warrior",
+    "class": "Warrior / Gladiator",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Rumarin", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn"],
     "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
