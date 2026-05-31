@@ -20,7 +20,8 @@ import {
   Bookmark,
   CheckCircle2,
   XCircle,
-  HelpCircle
+  HelpCircle,
+  Download
 } from 'lucide-react';
 
 export default function App() {
@@ -246,6 +247,57 @@ export default function App() {
     setModMatchMode('or');
     setClassMatchMode('or');
     setInteractMatchMode('or');
+  };
+
+  // Export current filtered followers list as CSV file
+  const handleExportCSV = () => {
+    const headers = [
+      'Follower Name',
+      'Gender',
+      'Race or Species',
+      'Combat Class',
+      'Origin Mod',
+      'Interacts With',
+      'Mod Web Link',
+      'Database Notes'
+    ];
+
+    const escapeCSV = (val: string | null | undefined) => {
+      if (val === null || val === undefined) return '';
+      let str = String(val);
+      str = str.replace(/"/g, '""');
+      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return `"${str}"`;
+      }
+      return str;
+    };
+
+    const csvRows = [
+      headers.join(','),
+      ...filteredFollowers.map(f => {
+        const interacts = f.interactsWith ? f.interactsWith.join('; ') : '';
+        return [
+          escapeCSV(f.follower),
+          escapeCSV(f.gender),
+          escapeCSV(f.race),
+          escapeCSV(f.class),
+          escapeCSV(f.mod),
+          escapeCSV(interacts),
+          escapeCSV(f.modUrl),
+          escapeCSV(f.note || '')
+        ].join(',');
+      })
+    ];
+
+    const blob = new Blob([csvRows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `skyrim_followers_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleSort = (field: SortField) => {
@@ -992,16 +1044,27 @@ export default function App() {
           <div className="lg:col-span-7 flex flex-col gap-4">
             
             {/* Header / Subtotal counter summary */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-skyrim-gold-light" />
                 <h2 className="font-display font-semibold text-lg tracking-wider text-white">
                   A-Z Skyrim Registry
                 </h2>
               </div>
-              <span className="text-xs bg-skyrim-surf border border-skyrim-border px-2.5 py-1 rounded text-gray-400 font-mono">
-                Showing <strong className="text-skyrim-gold">{filteredFollowers.length}</strong> of {FOLLOWERS.length} records
-              </span>
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-start">
+                <span className="text-xs bg-skyrim-surf border border-skyrim-border px-2.5 py-1.5 rounded text-gray-400 font-mono">
+                  Showing <strong className="text-skyrim-gold">{filteredFollowers.length}</strong> of {FOLLOWERS.length} records
+                </span>
+                <button
+                  type="button"
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 bg-skyrim-surf hover:bg-skyrim-surf2 border border-[#BFA15A]/30 hover:border-[#BFA15A] text-gray-300 hover:text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm focus:outline-none focus:ring-1 focus:ring-[#BFA15A]/30 cursor-pointer select-none"
+                  title="Export current filtered list to CSV spreadsheet file"
+                >
+                  <Download className="w-3.5 h-3.5 text-skyrim-gold" />
+                  <span>Export CSV</span>
+                </button>
+              </div>
             </div>
 
             {/* Main table container block with vertical scrolling */}
