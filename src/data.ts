@@ -8,7 +8,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Archer",
     "mod": "Inigo",
     "interactsWith": ["Lucien Flavius", "Auri", "Vilja", "Sofia", "Recorder", "Hoth", "Kaidan", "Lucifer", "Redcap"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1461"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1461",
+    "location": "Riften Jail",
+    "quests": ["Main Quest", "Dawnguard DLC", "Dragonborn DLC", "Thieves Guild", "College of Winterhold"],
+    "nonFollowerMods": ["Legacy of the Dragonborn"]
   },
   {
     "follower": "Auri",
@@ -17,7 +20,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Ranger / Archer",
     "mod": "Auri - Song of the Green",
     "interactsWith": ["Inigo", "Lucien Flavius", "Kaidan", "Vilja", "Remiel", "Gore", "Rumarin", "Zora Fair-Child", "Daenlyn"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/11278"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/11278",
+    "location": "Auri's Pod (Falkreath Hold)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Whispering Door"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Lucien Flavius",
@@ -26,7 +32,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Mage / Scholar",
     "mod": "Lucien",
     "interactsWith": ["Inigo", "Auri", "Hoth", "Kaidan", "Xelzaz", "Anduniel", "Elyndra", "Lyra", "Mareen", "Nadina", "Valyen"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/20035"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/20035",
+    "location": "Dead Man's Drink (Falkreath)",
+    "quests": ["Main Quest", "Dawnguard DLC", "Dragonborn DLC", "College of Winterhold"],
+    "nonFollowerMods": ["Legacy of the Dragonborn", "Beyond Skyrim: Bruma", "The Forgotten City", "Moonpath to Elsweyr"]
   },
   {
     "follower": "Kaidan",
@@ -35,7 +44,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior",
     "mod": "Kaidan 2",
     "interactsWith": ["Lucien Flavius", "Inigo", "Auri", "Remiel", "Xelzaz"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/19075"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/19075",
+    "location": "Abandoned Prison (Eastmarch)",
+    "quests": ["Main Quest", "Dawnguard DLC", "Civil War"],
+    "nonFollowerMods": ["Temple of Mara Quest Expansion"]
   },
   {
     "follower": "Remiel",
@@ -44,7 +56,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Engineer / Archer",
     "mod": "Remiel",
     "interactsWith": ["Xelzaz", "Kaidan", "Auri", "Gore", "Rumarin", "Zora Fair-Child", "Anum-La", "Redcap", "Lucifer", "Thogra Gra-Mugur", "Taliesin"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/51874"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/51874",
+    "location": "Silver-Blood Inn (Markarth)",
+    "quests": ["Main Quest", "Dawnguard DLC", "Dragonborn DLC", "Understone Keep Quests"],
+    "nonFollowerMods": ["Legacy of the Dragonborn", "Beyond Skyrim: Bruma", "Wyrmstooth", "The Forgotten City", "Sirenroot", "Tellvae"]
   },
   {
     "follower": "Xelzaz",
@@ -53,7 +68,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Mage / Spellsword / Alchemist",
     "mod": "Xelzaz",
     "interactsWith": ["Remiel", "Kaidan", "Lucien Flavius", "Nebarra", "Lucifer", "Redcap", "Taliesin"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/62893"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/62893",
+    "location": "Southern Windhelm Docks",
+    "quests": ["Main Quest", "Dawnguard DLC", "Dragonborn DLC", "Dark Brotherhood", "College of Winterhold"],
+    "nonFollowerMods": ["Legacy of the Dragonborn", "Beyond Skyrim: Bruma", "Wyrmstooth", "Sirenroot", "Tellvae", "House of Horrors Quest Expansion"]
   },
   {
     "follower": "Lucifer",
@@ -62,7 +80,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Archer / Scholar",
     "mod": "Lucifer - Custom Voiced Follower",
     "interactsWith": ["Inigo", "Nebarra", "Remiel", "Xelzaz", "Khash"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/44967"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/44967",
+    "location": "Dragonsreach Dungeon (Whiterun)",
+    "quests": ["Main Quest", "Dawnguard DLC", "Dragonborn DLC"],
+    "nonFollowerMods": ["Wyrmstooth"]
   },
   {
     "follower": "Khash",
@@ -71,7 +92,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Ranger / Archer",
     "mod": "Khash the Argonian (SidekicksOfTamriel)",
     "interactsWith": ["Caryalind Thallery", "Lucifer"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/40122"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/40122",
+    "location": "Falkreath Jail",
+    "quests": ["Main Quest", "Dawnguard DLC"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Caryalind Thallery",
@@ -80,7 +104,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Mage / Spellsword",
     "mod": "Caryalind Thallery (SidekicksOfTamriel)",
     "interactsWith": ["Khash"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/55477"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/55477",
+    "location": "Temple of the Divines (Solitude)",
+    "quests": ["Main Quest", "Civil War"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Hoth",
@@ -89,7 +116,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Bounty Hunter",
     "mod": "Hoth",
     "interactsWith": ["Inigo", "Lucien Flavius"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/16137"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/16137",
+    "location": "Windpeak Inn (Morthal)",
+    "quests": ["Bounty Contracts", "Main Quest"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Sofia",
@@ -98,7 +128,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Spellsword / Rogue",
     "mod": "Sofia - The Funny Companion",
     "interactsWith": ["Inigo"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2180"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2180",
+    "location": "Whiterun Stables",
+    "quests": ["Main Quest", "College of Winterhold", "Dark Brotherhood", "Thieves Guild"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Recorder",
@@ -107,7 +140,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Scholar",
     "mod": "Recorder - Buried Records",
     "interactsWith": ["Inigo", "Ambriel", "Viga"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/4718"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/4718",
+    "location": "Sleeping Giant Inn (Riverwood)",
+    "quests": ["Main Quest", "Dawnguard DLC"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Ambriel",
@@ -116,7 +152,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Paladin",
     "mod": "Ambriel",
     "interactsWith": ["Recorder", "Viga"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/139377"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/139377",
+    "location": "Falkreath Wilderness",
+    "quests": ["Main Quest", "Ambriel Story Quests"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Nebarra",
@@ -125,7 +164,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Mercenary",
     "mod": "Nebarra",
     "interactsWith": ["Lucifer", "Skeever", "Xelzaz"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/42343"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/42343",
+    "location": "Attius Farm (Solstheim)",
+    "quests": ["Main Quest", "Dragonborn DLC", "Civil War"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Skeever",
@@ -134,7 +176,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Archer",
     "mod": "Skeever",
     "interactsWith": ["Nebarra"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/56582"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/56582",
+    "location": "Candlehearth Hall (Windhelm)",
+    "quests": ["Main Quest", "Dark Brotherhood", "Thieves Guild"],
+    "nonFollowerMods": ["The Forgotten City"]
   },
   {
     "follower": "Gore",
@@ -143,7 +188,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Hunter",
     "mod": "Gore - A Companion Mod",
     "interactsWith": ["Taliesin", "Remiel", "Auri"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/85298"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/85298",
+    "location": "Falkreath Graveyard",
+    "quests": ["Main Quest", "Dawnguard DLC", "Dark Brotherhood", "House of Horrors"],
+    "nonFollowerMods": ["Sirenroot", "Wyrmstooth", "Vigilant"]
   },
   {
     "follower": "Vilja",
@@ -152,7 +200,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Bard / Healer / Alchemist",
     "mod": "Vilja in Skyrim",
     "interactsWith": ["Inigo", "Auri"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/6722"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/6722",
+    "location": "The Bannered Mare (Whiterun)",
+    "quests": ["Main Quest", "Thieves Guild", "Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Thogra Gra-Mugur",
@@ -161,7 +212,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Berserker",
     "mod": "Thogra Gra-Mugur",
     "interactsWith": ["Remiel"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/120007"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/120007",
+    "location": "Riften Stables",
+    "quests": ["Main Quest", "Companions", "Orc Stronghold Quests"],
+    "nonFollowerMods": ["Wyrmstooth"]
   },
   {
     "follower": "Taliesin",
@@ -170,7 +224,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Mage",
     "mod": "The Thalmor's Shadow",
     "interactsWith": ["Gore", "Remiel", "Xelzaz"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/93413"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/93413",
+    "location": "The Weynon Stones (The Pale)",
+    "quests": ["Main Quest", "College of Winterhold", "Civil War"],
+    "nonFollowerMods": ["Legacy of the Dragonborn", "Sirenroot"]
   },
   {
     "follower": "Redcap",
@@ -179,7 +236,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Scout",
     "mod": "Redcap the Riekling",
     "interactsWith": ["Inigo", "Xelzaz", "Remiel", "Nessa"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/73441"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/73441",
+    "location": "The Frozen Hearth Cellar (Winterhold)",
+    "quests": ["Main Quest", "Dawnguard DLC", "Solstheim Quests"],
+    "nonFollowerMods": ["Wyrmstooth"]
   },
   {
     "follower": "Viga",
@@ -188,7 +248,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior",
     "mod": "Recorder/Ambriel/Viga trio",
     "interactsWith": ["Recorder", "Ambriel"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/4718"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/4718",
+    "location": "Sleeping Giant Inn (Riverwood)",
+    "quests": ["Main Quest"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Celestine",
@@ -197,7 +260,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Mage / Healer",
     "mod": "Craftian",
     "interactsWith": ["Orpheus"],
-    "modUrl": "https://craftian.itch.io"
+    "modUrl": "https://craftian.itch.io",
+    "location": "The Bannered Mare (Whiterun)",
+    "quests": ["Main Quest"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Nessa",
@@ -206,7 +272,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue",
     "mod": "Craftian",
     "interactsWith": ["Redcap"],
-    "modUrl": "https://craftian.itch.io"
+    "modUrl": "https://craftian.itch.io",
+    "location": "The Bannered Mare (Whiterun)",
+    "quests": ["Main Quest", "Thieves Guild"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Orpheus",
@@ -215,7 +284,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Bard / Rogue",
     "mod": "Craftian",
     "interactsWith": ["Celestine"],
-    "modUrl": "https://craftian.itch.io"
+    "modUrl": "https://craftian.itch.io",
+    "location": "The Winking Skeever (Solitude)",
+    "quests": ["Main Quest"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Bikhai",
@@ -224,7 +296,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior",
     "mod": "Khajiit Will Follow",
     "interactsWith": ["Ma'kara", "Nanak", "S'ariq"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227",
+    "location": "Riften Khajiit Caravan",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Companions"],
+    "nonFollowerMods": ["The Forgotten City", "Vigilant", "Wyrmstooth"]
   },
   {
     "follower": "Ma'kara",
@@ -233,7 +308,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Dual-Wielder",
     "mod": "Khajiit Will Follow",
     "interactsWith": ["Bikhai", "Nanak", "S'ariq"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227",
+    "location": "Stonehills Iron Mine (Hjaalmarch)",
+    "quests": ["Main Quest", "Dawnguard DLC", "Dark Brotherhood"],
+    "nonFollowerMods": ["The Forgotten City", "Vigilant", "Wyrmstooth"]
   },
   {
     "follower": "Nanak",
@@ -242,7 +320,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Mage / Scholar",
     "mod": "Khajiit Will Follow",
     "interactsWith": ["Bikhai", "Ma'kara", "S'ariq"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227",
+    "location": "Hall of the Dead (Solitude)",
+    "quests": ["Main Quest", "College of Winterhold"],
+    "nonFollowerMods": ["The Forgotten City", "Vigilant", "Wyrmstooth"]
   },
   {
     "follower": "S'ariq",
@@ -251,7 +332,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Thief",
     "mod": "Khajiit Will Follow",
     "interactsWith": ["Bikhai", "Ma'kara", "Nanak"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/2227",
+    "location": "Dawnstar Barracks Jail",
+    "quests": ["Main Quest", "Thieves Guild", "Dragonborn DLC"],
+    "nonFollowerMods": ["The Forgotten City", "Vigilant", "Wyrmstooth"]
   },
   {
     "follower": "Anduniel",
@@ -260,7 +344,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Ranger / Bard",
     "mod": "Anna NPCs",
     "interactsWith": ["Darion", "Elyndra", "Garrett", "Lyra", "Mareen", "Nadina", "Teryn", "Valyen", "Zorya", "Lucien Flavius", "Amalee", "Rumarin", "Skjarn", "Valgus", "Isobel"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "Nightgate Inn (The Pale)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Darion",
@@ -269,7 +356,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Swashbuckler",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Elyndra", "Garrett", "Lyra", "Mareen", "Nadina", "Teryn", "Valyen", "Zorya"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "New Gnisis Cornerclub (Windhelm)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Elyndra",
@@ -278,7 +368,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Spellsword / Knight",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Garrett", "Lyra", "Mareen", "Nadina", "Teryn", "Valyen", "Zorya", "Lucien Flavius"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "Castle Dour (Solitude)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Garrett",
@@ -287,7 +380,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Thief",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Elyndra", "Lyra", "Mareen", "Nadina", "Teryn", "Valyen", "Zorya"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "The Ragged Flagon (Riften)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Lyra",
@@ -296,7 +392,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Elyndra", "Garrett", "Mareen", "Nadina", "Teryn", "Valyen", "Zorya", "Lucien Flavius"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "The Bannered Mare (Whiterun)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Mareen",
@@ -305,7 +404,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Dual-Wielder",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Elyndra", "Garrett", "Lyra", "Nadina", "Teryn", "Valyen", "Zorya", "Lucien Flavius"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "Dead Man's Drink (Falkreath)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Nadina",
@@ -314,7 +416,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Archer",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Elyndra", "Garrett", "Lyra", "Mareen", "Teryn", "Valyen", "Zorya", "Lucien Flavius", "Amalee", "Rumarin", "Skjarn", "Valgus", "Isobel"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "The Winking Skeever (Solitude)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Teryn",
@@ -323,7 +428,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Elyndra", "Garrett", "Lyra", "Mareen", "Nadina", "Valyen", "Zorya", "Amalee", "Rumarin", "Skjarn", "Valgus", "Isobel"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "Palace of Kings (Windhelm)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Valyen",
@@ -332,7 +440,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Mage",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Elyndra", "Garrett", "Lyra", "Mareen", "Nadina", "Teryn", "Zorya", "Lucien Flavius", "Amalee", "Rumarin", "Skjarn", "Valgus", "Isobel"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "The Frozen Hearth (Winterhold)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Zorya",
@@ -341,7 +452,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Paladin",
     "mod": "Anna NPCs",
     "interactsWith": ["Anduniel", "Darion", "Elyndra", "Garrett", "Lyra", "Mareen", "Nadina", "Teryn", "Valyen"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/1163",
+    "location": "Silver-Blood Inn (Markarth)",
+    "quests": ["Main Quest", "Dawnguard DLC", "The Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Amalee",
@@ -350,7 +464,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Ranger / Bard",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Anum-La", "Zora Fair-Child", "Rumarin", "Gorr", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn", "Anduniel", "Nadina", "Teryn", "Valyen"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Eldergleam Sanctuary",
+    "quests": ["Main Quest", "3DNPC Mod Quests", "The Companions", "Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Anum-La",
@@ -359,7 +476,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Knight",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Zora Fair-Child", "Rumarin", "Gorr", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn", "Remiel"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Candlehearth Hall (Windhelm)",
+    "quests": ["Main Quest", "3DNPC Mod Quests", "The Companions", "Civil War"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Zora Fair-Child",
@@ -368,7 +488,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Dual-Wielder",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Rumarin", "Gorr", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn", "Auri", "Remiel"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Brittleshin Pass Cage",
+    "quests": ["Main Quest", "3DNPC Mod Quests", "Dawnguard DLC"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Rumarin",
@@ -377,7 +500,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Archer",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Gorr", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn", "Auri", "Remiel", "Anduniel", "Nadina", "Teryn", "Valyen"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Yorgrim Overlook",
+    "quests": ["Main Quest", "3DNPC Mod Quests", "College of Winterhold"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Gorr",
@@ -386,7 +512,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Gladiator",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Rumarin", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Sleeping Giant Inn (Riverwood)",
+    "quests": ["Main Quest", "3DNPC Mod Quests", "The Companions"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Skjarn",
@@ -395,7 +524,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Rumarin", "Gorr", "Valgus", "Isobel", "Tikrid", "Froa", "Daenlyn", "Anduniel", "Nadina", "Teryn", "Valyen"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "The Winking Skeever (Solitude)",
+    "quests": ["Main Quest", "3DNPC Mod Quests", "Bard's College"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Valgus",
@@ -404,7 +536,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Mage",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Rumarin", "Gorr", "Skjarn", "Isobel", "Tikrid", "Froa", "Daenlyn", "Anduniel", "Nadina", "Teryn", "Valyen"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Falkreath Graveyard",
+    "quests": ["Main Quest", "3DNPC Mod Quests", "Civil War"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Isobel",
@@ -413,7 +548,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior / Smith",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Rumarin", "Gorr", "Skjarn", "Valgus", "Tikrid", "Froa", "Daenlyn", "Anduniel", "Nadina", "Teryn", "Valyen"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Solitude Smithy",
+    "quests": ["Main Quest", "3DNPC Mod Quests"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Tikrid",
@@ -422,7 +560,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Rumarin", "Gorr", "Skjarn", "Valgus", "Isobel", "Froa", "Daenlyn"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Windpeak Inn (Morthal)",
+    "quests": ["Main Quest", "3DNPC Mod Quests"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Froa",
@@ -431,7 +572,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Warrior",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Rumarin", "Gorr", "Skjarn", "Valgus", "Isobel", "Tikrid", "Daenlyn"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Braidwood Inn (Kynesgrove)",
+    "quests": ["Main Quest", "3DNPC Mod Quests"],
+    "nonFollowerMods": []
   },
   {
     "follower": "Daenlyn",
@@ -440,7 +584,10 @@ export const FOLLOWERS: Follower[] = [
     "class": "Rogue / Bard",
     "mod": "Interesting NPCs (3DNPC)",
     "interactsWith": ["Amalee", "Anum-La", "Zora Fair-Child", "Rumarin", "Gorr", "Skjarn", "Valgus", "Isobel", "Tikrid", "Froa", "Auri"],
-    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194"
+    "modUrl": "https://www.nexusmods.com/skyrimspecialedition/mods/29194",
+    "location": "Dead Man's Drink (Falkreath)",
+    "quests": ["Main Quest", "3DNPC Mod Quests", "The Companions"],
+    "nonFollowerMods": []
   }
 ];
 

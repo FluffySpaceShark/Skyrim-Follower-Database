@@ -8,7 +8,10 @@ export interface Follower {
   modUrl: string;
   modDbUrl?: string;
   note?: string;
+  location: string;
+  quests: string[];
+  nonFollowerMods: string[];
 }
 
-export type SortField = 'follower' | 'gender' | 'race' | 'class' | 'mod';
+export type SortField = 'follower' | 'gender' | 'race' | 'class' | 'mod' | 'location';
 export type SortDirection = 'asc' | 'desc';

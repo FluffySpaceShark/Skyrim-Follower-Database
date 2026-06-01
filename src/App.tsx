@@ -21,7 +21,8 @@ import {
   CheckCircle2,
   XCircle,
   HelpCircle,
-  Download
+  Download,
+  MapPin
 } from 'lucide-react';
 
 export default function App() {
@@ -40,6 +41,18 @@ export default function App() {
   const [modMatchMode, setModMatchMode] = useState<'and' | 'or'>('or');
   const [classMatchMode, setClassMatchMode] = useState<'and' | 'or'>('or');
   const [interactMatchMode, setInteractMatchMode] = useState<'and' | 'or'>('or');
+
+  // New states for Location, Quests, and Non-Follower Mod filters
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [excludedLocations, setExcludedLocations] = useState<string[]>([]);
+  
+  const [selectedQuests, setSelectedQuests] = useState<string[]>([]);
+  const [excludedQuests, setExcludedQuests] = useState<string[]>([]);
+  const [questMatchMode, setQuestMatchMode] = useState<'and' | 'or'>('or');
+
+  const [selectedNonFollowerMods, setSelectedNonFollowerMods] = useState<string[]>([]);
+  const [excludedNonFollowerMods, setExcludedNonFollowerMods] = useState<string[]>([]);
+  const [nonFollowerModMatchMode, setNonFollowerModMatchMode] = useState<'and' | 'or'>('or');
   
   // Selected Follower details state (default to Inigo or first item)
   const [selectedFollowerName, setSelectedFollowerName] = useState('Inigo');
@@ -79,6 +92,37 @@ export default function App() {
     return Array.from(new Set(FOLLOWERS.map(f => f.follower))).sort();
   }, []);
 
+  // Dynamically extract unique starting locations
+  const locations = useMemo(() => {
+    return Array.from(new Set(FOLLOWERS.map(f => f.location).filter(Boolean))).sort();
+  }, []);
+
+  // Dynamically extract unique commented quests
+  const quests = useMemo(() => {
+    const set = new Set<string>();
+    FOLLOWERS.forEach(f => {
+      if (f.quests) {
+        f.quests.forEach(q => {
+          if (q.trim()) set.add(q.trim());
+        });
+      }
+    });
+    return Array.from(set).sort();
+  }, []);
+
+  // Dynamically extract unique non-follower mods
+  const nonFollowerMods = useMemo(() => {
+    const set = new Set<string>();
+    FOLLOWERS.forEach(f => {
+      if (f.nonFollowerMods) {
+        f.nonFollowerMods.forEach(m => {
+          if (m.trim()) set.add(m.trim());
+        });
+      }
+    });
+    return Array.from(set).sort();
+  }, []);
+
   // Filter & Sort core logic
   const filteredFollowers = useMemo(() => {
     return FOLLOWERS.filter(f => {
@@ -98,6 +142,21 @@ export default function App() {
         return false;
       }
 
+      // Excluded locations override EVERYTHING
+      if (excludedLocations.length > 0 && excludedLocations.includes(f.location)) {
+        return false;
+      }
+
+      // Excluded quests override EVERYTHING
+      if (excludedQuests.length > 0 && f.quests.some(q => excludedQuests.includes(q))) {
+        return false;
+      }
+
+      // Excluded non-follower mods override EVERYTHING
+      if (excludedNonFollowerMods.length > 0 && f.nonFollowerMods.some(m => excludedNonFollowerMods.includes(m))) {
+        return false;
+      }
+
       // Check active filters status
       const activeKeyword = searchQuery.trim() !== '';
       const activeGender = !!selectedGender;
@@ -105,15 +164,21 @@ export default function App() {
       const activeMod = selectedMods.length > 0;
       const activeClass = selectedClasses.length > 0;
       const activeInteracts = interactFilters.length > 0;
+      const activeLocation = selectedLocations.length > 0;
+      const activeQuests = selectedQuests.length > 0;
+      const activeNonFollowerMods = selectedNonFollowerMods.length > 0;
 
-      // 1. Text Search matching
+      // 1. Text Search matching (overriding custom locations & commentaries too!)
       let matchesKeyword = false;
       if (activeKeyword) {
         const query = searchQuery.toLowerCase();
         matchesKeyword = f.follower.toLowerCase().includes(query) ||
                          f.class.toLowerCase().includes(query) ||
                          f.mod.toLowerCase().includes(query) ||
-                         f.race.toLowerCase().includes(query);
+                         f.race.toLowerCase().includes(query) ||
+                         f.location.toLowerCase().includes(query) ||
+                         (f.quests && f.quests.some(q => q.toLowerCase().includes(query))) ||
+                         (f.nonFollowerMods && f.nonFollowerMods.some(m => m.toLowerCase().includes(query)));
       }
 
       // 2. Gender matching
@@ -172,6 +237,32 @@ export default function App() {
         }
       }
 
+      // 7. Starting Location matching
+      let matchesLocation = false;
+      if (activeLocation) {
+        matchesLocation = selectedLocations.includes(f.location);
+      }
+
+      // 8. Quests commentary matching
+      let matchesQuests = false;
+      if (activeQuests) {
+        if (questMatchMode === 'and') {
+          matchesQuests = selectedQuests.every(q => f.quests.includes(q));
+        } else {
+          matchesQuests = selectedQuests.some(q => f.quests.includes(q));
+        }
+      }
+
+      // 9. Non-follower mods commentary matching
+      let matchesNonFollowerMods = false;
+      if (activeNonFollowerMods) {
+        if (nonFollowerModMatchMode === 'and') {
+          matchesNonFollowerMods = selectedNonFollowerMods.every(m => f.nonFollowerMods.includes(m));
+        } else {
+          matchesNonFollowerMods = selectedNonFollowerMods.some(m => f.nonFollowerMods.includes(m));
+        }
+      }
+
       // Calculate total active category count
       const activeFiltersCount = 
         (activeKeyword ? 1 : 0) +
@@ -179,7 +270,10 @@ export default function App() {
         (activeRace ? 1 : 0) +
         (activeMod ? 1 : 0) +
         (activeClass ? 1 : 0) +
-        (activeInteracts ? 1 : 0);
+        (activeInteracts ? 1 : 0) +
+        (activeLocation ? 1 : 0) +
+        (activeQuests ? 1 : 0) +
+        (activeNonFollowerMods ? 1 : 0);
 
       if (activeFiltersCount === 0) {
         return true;
@@ -192,7 +286,10 @@ export default function App() {
                (activeRace && matchesRace) ||
                (activeMod && matchesMod) ||
                (activeClass && matchesClass) ||
-               (activeInteracts && matchesInteracts);
+               (activeInteracts && matchesInteracts) ||
+               (activeLocation && matchesLocation) ||
+               (activeQuests && matchesQuests) ||
+               (activeNonFollowerMods && matchesNonFollowerMods);
       } else {
         // AND across categories: must match ALL active filters
         return (!activeKeyword || matchesKeyword) &&
@@ -200,7 +297,10 @@ export default function App() {
                (!activeRace || matchesRace) &&
                (!activeMod || matchesMod) &&
                (!activeClass || matchesClass) &&
-               (!activeInteracts || matchesInteracts);
+               (!activeInteracts || matchesInteracts) &&
+               (!activeLocation || matchesLocation) &&
+               (!activeQuests || matchesQuests) &&
+               (!activeNonFollowerMods || matchesNonFollowerMods);
       }
     }).sort((a, b) => {
       let valA = a[sortField]?.toLowerCase() || '';
@@ -215,6 +315,8 @@ export default function App() {
   }, [
     searchQuery, selectedGender, selectedRaces, excludedRaces, selectedMods, excludedMods,
     selectedClasses, excludedClasses, interactFilters,
+    selectedLocations, excludedLocations, selectedQuests, excludedQuests, questMatchMode,
+    selectedNonFollowerMods, excludedNonFollowerMods, nonFollowerModMatchMode,
     globalFilterLogic, raceMatchMode, modMatchMode, classMatchMode, interactMatchMode,
     sortField, sortDirection
   ]);
@@ -242,6 +344,12 @@ export default function App() {
     setSelectedClasses([]);
     setExcludedClasses([]);
     setInteractFilters([]);
+    setSelectedLocations([]);
+    setExcludedLocations([]);
+    setSelectedQuests([]);
+    setExcludedQuests([]);
+    setSelectedNonFollowerMods([]);
+    setExcludedNonFollowerMods([]);
     setGlobalFilterLogic('and');
     setRaceMatchMode('or');
     setModMatchMode('or');
@@ -256,6 +364,9 @@ export default function App() {
       'Gender',
       'Race or Species',
       'Combat Class',
+      'Starting Location',
+      'Quest Commentaries',
+      'Non-Follower Mod Commentaries',
       'Origin Mod',
       'Interacts With',
       'Mod Web Link',
@@ -276,11 +387,16 @@ export default function App() {
       headers.join(','),
       ...filteredFollowers.map(f => {
         const interacts = f.interactsWith ? f.interactsWith.join('; ') : '';
+        const questsText = f.quests ? f.quests.join('; ') : '';
+        const nonFollowerModsText = f.nonFollowerMods ? f.nonFollowerMods.join('; ') : '';
         return [
           escapeCSV(f.follower),
           escapeCSV(f.gender),
           escapeCSV(f.race),
           escapeCSV(f.class),
+          escapeCSV(f.location),
+          escapeCSV(questsText),
+          escapeCSV(nonFollowerModsText),
           escapeCSV(f.mod),
           escapeCSV(interacts),
           escapeCSV(f.modUrl),
@@ -345,7 +461,13 @@ export default function App() {
     excludedMods.length > 0 || 
     selectedClasses.length > 0 || 
     excludedClasses.length > 0 || 
-    interactFilters.length > 0);
+    interactFilters.length > 0 ||
+    selectedLocations.length > 0 ||
+    excludedLocations.length > 0 ||
+    selectedQuests.length > 0 ||
+    excludedQuests.length > 0 ||
+    selectedNonFollowerMods.length > 0 ||
+    excludedNonFollowerMods.length > 0);
 
   return (
     <div className="min-h-screen bg-skyrim-bg text-gray-200 selection:bg-skyrim-gold selection:text-black" id="skyrim-follower-app">
@@ -419,7 +541,7 @@ export default function App() {
               <h3 className="text-[10px] text-skyrim-gold/80 font-bold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-skyrim-gold" /> Filter Criteria (Inclusion)
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-9 gap-4">
                 {/* Filter 1: Universal Keyword */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="search-input" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
@@ -493,9 +615,9 @@ export default function App() {
                         >
                           <span className="truncate max-w-[130px]">{raceName}</span>
                           <button 
-                            type="button" 
-                            onClick={() => setSelectedRaces(selectedRaces.filter(r => r !== raceName))}
-                            className="text-gray-400 hover:text-white font-bold focus:outline-none"
+                             type="button" 
+                             onClick={() => setSelectedRaces(selectedRaces.filter(r => r !== raceName))}
+                             className="text-gray-400 hover:text-white font-bold focus:outline-none"
                           >
                             ✕
                           </button>
@@ -505,7 +627,7 @@ export default function App() {
                   )}
                 </div>
 
-                {/* Filter 3.1: Combat Class tags selection (requested: make class section tags) */}
+                {/* Filter 3.1: Combat Class tags selection */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="class-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
                     Combat Class Tags
@@ -665,6 +787,156 @@ export default function App() {
                   )}
                 </div>
 
+                {/* Filter 6: Starting Locations (New) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="location-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Starting Location
+                  </label>
+                  <select
+                    id="location-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !selectedLocations.includes(val)) {
+                        setSelectedLocations([...selectedLocations, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="">Include Locations...</option>
+                    {locations.map(loc => (
+                      <option 
+                        key={`location-opt-${loc}`} 
+                        value={loc}
+                        disabled={selectedLocations.includes(loc)}
+                        className="text-gray-205 disabled:text-gray-600"
+                      >
+                        {selectedLocations.includes(loc) ? `✓ ${loc}` : loc}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Location badges micro-list */}
+                  {selectedLocations.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {selectedLocations.map(loc => (
+                        <span 
+                          key={`location-badge-${loc}`}
+                          className="inline-flex items-center gap-1 bg-[#231b14] text-[10px] text-skyrim-gold border border-skyrim-gold/25 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{loc}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedLocations(selectedLocations.filter(l => l !== loc))}
+                            className="text-gray-405 hover:text-white font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Filter 7: Quest Commentary (New) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="quest-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Quest Commentary
+                  </label>
+                  <select
+                    id="quest-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !selectedQuests.includes(val)) {
+                        setSelectedQuests([...selectedQuests, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="">Include Quests...</option>
+                    {quests.map(qst => (
+                      <option 
+                        key={`quest-opt-${qst}`} 
+                        value={qst}
+                        disabled={selectedQuests.includes(qst)}
+                        className="text-gray-205 disabled:text-gray-600"
+                      >
+                        {selectedQuests.includes(qst) ? `✓ ${qst}` : qst}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Quest badges micro-list */}
+                  {selectedQuests.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {selectedQuests.map(qst => (
+                        <span 
+                          key={`quest-badge-${qst}`}
+                          className="inline-flex items-center gap-1 bg-amber-950/20 text-[10px] text-[#dac29a] border border-skyrim-gold/20 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{qst}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedQuests(selectedQuests.filter(q => q !== qst))}
+                            className="text-gray-405 hover:text-white font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Filter 8: Non-Follower Mod dialogue commentary (New) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="nonfollower-select" className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                    Non-Follower Mod
+                  </label>
+                  <select
+                    id="nonfollower-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !selectedNonFollowerMods.includes(val)) {
+                        setSelectedNonFollowerMods([...selectedNonFollowerMods, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-gray-600 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-gray-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="">Include Ext-Mods...</option>
+                    {nonFollowerMods.map(exMod => (
+                      <option 
+                        key={`nonfollower-opt-${exMod}`} 
+                        value={exMod}
+                        disabled={selectedNonFollowerMods.includes(exMod)}
+                        className="text-gray-205 disabled:text-gray-600"
+                      >
+                        {selectedNonFollowerMods.includes(exMod) ? `✓ ${exMod}` : exMod}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Ext-Mod badges micro-list */}
+                  {selectedNonFollowerMods.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {selectedNonFollowerMods.map(exMod => (
+                        <span 
+                          key={`nonfollower-badge-${exMod}`}
+                          className="inline-flex items-center gap-1 bg-[#101b1e] text-[10px] text-cyan-350 border border-cyan-900/40 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{exMod}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedNonFollowerMods(selectedNonFollowerMods.filter(m => m !== exMod))}
+                            className="text-cyan-405 hover:text-white font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
 
@@ -673,7 +945,7 @@ export default function App() {
               <h3 className="text-[10px] text-rose-400 font-bold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> STRICT Overrides (Exclusion / Filters Out)
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 
                 {/* Exclude Races (requested: as well as filtering out races as well) */}
                 <div className="flex flex-col gap-1.5">
@@ -825,6 +1097,156 @@ export default function App() {
                   )}
                 </div>
 
+                {/* Exclude Starting Locations (New) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="exclude-location-select" className="text-[11px] text-rose-455 font-bold uppercase tracking-wider">
+                    Exclude Locations
+                  </label>
+                  <select
+                    id="exclude-location-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !excludedLocations.includes(val)) {
+                        setExcludedLocations([...excludedLocations, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-rose-500/50 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-rose-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="" className="text-gray-400">Exclude location...</option>
+                    {locations.map(loc => (
+                      <option 
+                        key={`exclude-location-${loc}`} 
+                        value={loc}
+                        disabled={excludedLocations.includes(loc)}
+                        className="text-gray-200 disabled:text-gray-600"
+                      >
+                        {excludedLocations.includes(loc) ? `✓ ${loc} (Excluded)` : `Exclude ${loc}`}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Exclusions Micro-list */}
+                  {excludedLocations.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {excludedLocations.map(loc => (
+                        <span 
+                          key={`exclude-loc-badge-${loc}`}
+                          className="inline-flex items-center gap-1 bg-rose-950/40 text-[10px] text-rose-300 border border-rose-900/40 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{loc}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setExcludedLocations(excludedLocations.filter(l => l !== loc))}
+                            className="text-rose-400 hover:text-rose-200 font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Exclude Quests Commentary (New) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="exclude-quest-select" className="text-[11px] text-rose-455 font-bold uppercase tracking-wider">
+                    Exclude Quests
+                  </label>
+                  <select
+                    id="exclude-quest-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !excludedQuests.includes(val)) {
+                        setExcludedQuests([...excludedQuests, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-rose-500/50 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-rose-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="" className="text-gray-400">Exclude quests...</option>
+                    {quests.map(qst => (
+                      <option 
+                        key={`exclude-quest-${qst}`} 
+                        value={qst}
+                        disabled={excludedQuests.includes(qst)}
+                        className="text-gray-200 disabled:text-gray-600"
+                      >
+                        {excludedQuests.includes(qst) ? `✓ ${qst} (Excluded)` : `Exclude ${qst}`}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Exclusions Micro-list */}
+                  {excludedQuests.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {excludedQuests.map(qst => (
+                        <span 
+                          key={`exclude-quest-badge-${qst}`}
+                          className="inline-flex items-center gap-1 bg-rose-950/40 text-[10px] text-rose-300 border border-rose-900/40 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{qst}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setExcludedQuests(excludedQuests.filter(q => q !== qst))}
+                            className="text-rose-400 hover:text-rose-200 font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Exclude Non-Follower Mods Commentary (New) */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="exclude-nonfollower-select" className="text-[11px] text-rose-455 font-bold uppercase tracking-wider">
+                    Exclude Ext-Mods
+                  </label>
+                  <select
+                    id="exclude-nonfollower-select"
+                    value=""
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !excludedNonFollowerMods.includes(val)) {
+                        setExcludedNonFollowerMods([...excludedNonFollowerMods, val]);
+                      }
+                    }}
+                    className="w-full bg-skyrim-surf2 border border-skyrim-border hover:border-rose-500/50 focus:border-skyrim-gold rounded-lg px-3 py-1.5 text-xs text-rose-200 transition-all outline-none cursor-pointer"
+                  >
+                    <option value="" className="text-gray-400">Exclude non-follower mods...</option>
+                    {nonFollowerMods.map(exMod => (
+                      <option 
+                        key={`exclude-nonfollower-${exMod}`} 
+                        value={exMod}
+                        disabled={excludedNonFollowerMods.includes(exMod)}
+                        className="text-gray-200 disabled:text-gray-600"
+                      >
+                        {excludedNonFollowerMods.includes(exMod) ? `✓ ${exMod} (Excluded)` : `Exclude ${exMod}`}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Exclusions Micro-list */}
+                  {excludedNonFollowerMods.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1 max-h-16 overflow-y-auto">
+                      {excludedNonFollowerMods.map(exMod => (
+                        <span 
+                          key={`exclude-nonfollower-badge-${exMod}`}
+                          className="inline-flex items-center gap-1 bg-rose-950/40 text-[10px] text-rose-300 border border-rose-900/40 px-1.5 py-0.5 rounded"
+                        >
+                          <span className="truncate max-w-[130px]">{exMod}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setExcludedNonFollowerMods(excludedNonFollowerMods.filter(m => m !== exMod))}
+                            className="text-rose-400 hover:text-rose-200 font-bold focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
 
@@ -932,6 +1354,38 @@ export default function App() {
                   {interactMatchMode === 'and' ? 'ALL (AND)' : 'ANY (OR)'}
                 </button>
               </div>
+
+              {/* Quests Match Mode Toggle */}
+              <div className="flex items-center gap-1.5 bg-skyrim-surf2/50 px-2 py-1 rounded border border-skyrim-border/40 hover:border-gray-600 transition-colors cursor-help" title="ANY shows followers supporting commentary for at least one selected quest; ALL requires supporting commentary for ALL of your selected quests.">
+                <span className="text-gray-400 text-[10px] uppercase font-medium">Quests:</span>
+                <button
+                  type="button"
+                  onClick={() => setQuestMatchMode(prev => prev === 'and' ? 'or' : 'and')}
+                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider transition-all select-none ${
+                    questMatchMode === 'and'
+                      ? 'bg-amber-950/45 text-[#9adab1] border border-[#2b4c3e]/40 shadow-sm'
+                      : 'bg-stone-800 text-stone-400 hover:text-gray-200'
+                  }`}
+                >
+                  {questMatchMode === 'and' ? 'ALL (AND)' : 'ANY (OR)'}
+                </button>
+              </div>
+
+              {/* Non-Followers Mods Match Mode Toggle */}
+              <div className="flex items-center gap-1.5 bg-skyrim-surf2/50 px-2 py-1 rounded border border-skyrim-border/40 hover:border-gray-600 transition-colors cursor-help" title="ANY shows followers with banter commentary for at least one selected external mod; ALL requires commenting on ALL of your selected external mods concurrently.">
+                <span className="text-gray-400 text-[10px] uppercase font-medium">Ext-Mods:</span>
+                <button
+                  type="button"
+                  onClick={() => setNonFollowerModMatchMode(prev => prev === 'and' ? 'or' : 'and')}
+                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider transition-all select-none ${
+                    nonFollowerModMatchMode === 'and'
+                      ? 'bg-[#101c1e] text-cyan-300 border border-cyan-900/40 shadow-sm'
+                      : 'bg-stone-800 text-stone-400 hover:text-gray-200'
+                  }`}
+                >
+                  {nonFollowerModMatchMode === 'and' ? 'ALL (AND)' : 'ANY (OR)'}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -949,12 +1403,14 @@ export default function App() {
                   Gender: {selectedGender}
                 </span>
               )}
+              
+              {/* Races */}
               {selectedRaces.map(raceName => (
-                <span key={`active-race-${raceName}`} className="bg-skyrim-surf3 border border-emerald-950/40 px-2 py-0.5 rounded text-skyrim-gold-light flex items-center gap-1.5 shadow-sm">
+                <span key={`active-race-${raceName}`} className="bg-skyrim-surf3 border border-emerald-950/40 px-2 py-0.5 rounded text-skyrim-gold-light flex items-center gap-1.5 shadow-sm animate-fade-in">
                   Race: {raceName}
                   <button 
                     onClick={() => setSelectedRaces(prev => prev.filter(r => r !== raceName))}
-                    className="hover:text-white ml-0.5 font-bold text-gray-400"
+                    className="hover:text-white ml-0.5 font-bold text-gray-400 focus:outline-none"
                     title="Remove Filter"
                   >
                     ✕
@@ -966,19 +1422,21 @@ export default function App() {
                   Excluded Race: {raceName}
                   <button 
                     onClick={() => setExcludedRaces(prev => prev.filter(r => r !== raceName))}
-                    className="hover:text-white ml-0.5 font-bold text-rose-450"
+                    className="hover:text-white ml-0.5 font-bold text-rose-450 focus:outline-none"
                     title="Remove Exclusion"
                   >
                     ✕
                   </button>
                 </span>
               ))}
+
+              {/* Classes */}
               {selectedClasses.map(className => (
                 <span key={`active-class-${className}`} className="bg-skyrim-surf3 border border-sky-950/50 px-2 py-0.5 rounded text-sky-305 flex items-center gap-1.5 shadow-sm">
                   Class: {className}
                   <button 
                     onClick={() => setSelectedClasses(prev => prev.filter(c => c !== className))}
-                    className="hover:text-white ml-0.5 font-bold text-sky-400"
+                    className="hover:text-white ml-0.5 font-bold text-sky-400 focus:outline-none"
                     title="Remove Filter"
                   >
                     ✕
@@ -990,19 +1448,21 @@ export default function App() {
                   Excluded Class: {className}
                   <button 
                     onClick={() => setExcludedClasses(prev => prev.filter(c => c !== className))}
-                    className="hover:text-white ml-0.5 font-bold text-rose-450"
+                    className="hover:text-white ml-0.5 font-bold text-rose-450 focus:outline-none"
                     title="Remove Exclusion"
                   >
                     ✕
                   </button>
                 </span>
               ))}
+
+              {/* Source Mods */}
               {selectedMods.map(modName => (
                 <span key={`active-mod-${modName}`} className="bg-skyrim-surf3 border border-skyrim-border px-2 py-0.5 rounded text-gray-300 flex items-center gap-1.5 shadow-sm">
                   Source: {modName}
                   <button 
                     onClick={() => setSelectedMods(prev => prev.filter(m => m !== modName))}
-                    className="hover:text-white ml-0.5 font-bold text-gray-400"
+                    className="hover:text-white ml-0.5 font-bold text-gray-400 focus:outline-none"
                     title="Remove Filter"
                   >
                     ✕
@@ -1014,19 +1474,99 @@ export default function App() {
                   Excluded Mod: {modName}
                   <button 
                     onClick={() => setExcludedMods(prev => prev.filter(m => m !== modName))}
-                    className="hover:text-white ml-0.5 font-bold text-rose-450"
+                    className="hover:text-white ml-0.5 font-bold text-rose-450 focus:outline-none"
                     title="Remove Exclusion"
                   >
                     ✕
                   </button>
                 </span>
               ))}
+
+              {/* Locations */}
+              {selectedLocations.map(loc => (
+                <span key={`active-loc-${loc}`} className="bg-[#2a2118] border border-skyrim-gold/25 px-2 py-0.5 rounded text-skyrim-gold-light flex items-center gap-1.5 shadow-sm">
+                  Starting: {loc}
+                  <button 
+                    onClick={() => setSelectedLocations(prev => prev.filter(l => l !== loc))}
+                    className="hover:text-white ml-0.5 font-bold text-gray-400 focus:outline-none"
+                    title="Remove Filter"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+              {excludedLocations.map(loc => (
+                <span key={`active-ex-loc-${loc}`} className="bg-rose-950/40 border border-rose-900/40 px-2 py-0.5 rounded text-rose-350 flex items-center gap-1.5 shadow-sm">
+                  Excluded Starting: {loc}
+                  <button 
+                    onClick={() => setExcludedLocations(prev => prev.filter(l => l !== loc))}
+                    className="hover:text-white ml-0.5 font-bold text-rose-450 focus:outline-none"
+                    title="Remove Exclusion"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+
+              {/* Quests Commentary */}
+              {selectedQuests.map(qst => (
+                <span key={`active-qst-${qst}`} className="bg-[#1b2520] border border-[#2b4c3e]/30 px-2 py-0.5 rounded text-[#9adab1] flex items-center gap-1.5 shadow-sm">
+                  Quest Commentary: {qst}
+                  <button 
+                    onClick={() => setSelectedQuests(prev => prev.filter(q => q !== qst))}
+                    className="hover:text-white ml-0.5 font-bold text-gray-400 focus:outline-none"
+                    title="Remove Filter"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+              {excludedQuests.map(qst => (
+                <span key={`active-ex-qst-${qst}`} className="bg-rose-950/40 border border-rose-900/40 px-2 py-0.5 rounded text-rose-350 flex items-center gap-1.5 shadow-sm">
+                  Excluded Quest: {qst}
+                  <button 
+                    onClick={() => setExcludedQuests(prev => prev.filter(q => q !== qst))}
+                    className="hover:text-white ml-0.5 font-bold text-rose-450 focus:outline-none"
+                    title="Remove Exclusion"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+
+              {/* Non-Followers Mods Commentary */}
+              {selectedNonFollowerMods.map(exMod => (
+                <span key={`active-exmod-${exMod}`} className="bg-[#101c1e] border border-cyan-900/40 px-2 py-0.5 rounded text-cyan-305 flex items-center gap-1.5 shadow-sm">
+                  Ext-Mod Commentary: {exMod}
+                  <button 
+                    onClick={() => setSelectedNonFollowerMods(prev => prev.filter(m => m !== exMod))}
+                    className="hover:text-white ml-0.5 font-bold text-cyan-400 focus:outline-none"
+                    title="Remove Filter"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+              {excludedNonFollowerMods.map(exMod => (
+                <span key={`active-ex-exmod-${exMod}`} className="bg-rose-950/40 border border-rose-900/40 px-2 py-0.5 rounded text-rose-350 flex items-center gap-1.5 shadow-sm">
+                  Excluded Ext-Mod: {exMod}
+                  <button 
+                    onClick={() => setExcludedNonFollowerMods(prev => prev.filter(m => m !== exMod))}
+                    className="hover:text-white ml-0.5 font-bold text-rose-450 focus:outline-none"
+                    title="Remove Exclusion"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+
+              {/* Banter */}
               {interactFilters.map(filterItem => (
                 <span key={`active-interact-${filterItem}`} className="bg-[#121c22] border border-sky-900/30 px-2 py-0.5 rounded text-sky-305 flex items-center gap-1.5 shadow-sm">
                   {filterItem === '__has_any__' ? 'Banter: Any interaction' : `Talks with: ${filterItem}`}
                   <button 
                     onClick={() => setInteractFilters(prev => prev.filter(i => i !== filterItem))}
-                    className="hover:text-white ml-0.5 font-bold text-sky-400"
+                    className="hover:text-white ml-0.5 font-bold text-sky-400 focus:outline-none"
                     title="Remove Filter"
                   >
                     ✕
@@ -1037,19 +1577,24 @@ export default function App() {
           )}
         </section>
 
-        {/* Dynamic Multi-Column Bento Layout Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
+        {/* Full-width Stacked Layout: Searchable Database Registry & Detailed Profile */}
+        <section className="flex flex-col gap-6 md:gap-8">
           
-          {/* LEFT BENTO BLOCK (7/12 cols): Searchable Database Registry */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
+          {/* Searchable Database Registry */}
+          <div className="w-full flex flex-col gap-4">
             
             {/* Header / Subtotal counter summary */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-skyrim-gold-light" />
-                <h2 className="font-display font-semibold text-lg tracking-wider text-white">
-                  A-Z Skyrim Registry
-                </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-skyrim-gold-light" />
+                  <h2 className="font-display font-semibold text-lg tracking-wider text-white">
+                    A-Z Skyrim Registry
+                  </h2>
+                </div>
+                <span className="text-[10px] text-gray-500 italic mt-0.5 sm:mt-0 sm:ml-2">
+                  (Scroll horizontally ↔ to view Locations, Quests & Mod Interactions)
+                </span>
               </div>
               <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-start">
                 <span className="text-xs bg-skyrim-surf border border-skyrim-border px-2.5 py-1.5 rounded text-gray-400 font-mono">
@@ -1067,16 +1612,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* Main table container block with vertical scrolling */}
+            {/* Main table container block with horizontal & vertical scrolling */}
             <div className="bg-skyrim-surf border border-skyrim-border rounded-xl shadow-md overflow-hidden" id="registry-table-card">
-              <div className="max-h-[560px] overflow-y-auto relative">
+              <div className="max-h-[560px] overflow-auto relative scrollbar-thin">
                 <table className="w-full text-left border-collapse text-xs md:text-sm">
                   
                   {/* Styled Header columns with sorting actions */}
                   <thead className="bg-[#1c1813] sticky top-0 z-15 shadow-sm border-b border-skyrim-border">
                     <tr className="text-gray-400 uppercase text-[10px] md:text-xs font-display tracking-wider">
                       <th 
-                        className="py-3 px-4 cursor-pointer hover:bg-skyrim-surf3 transition-colors text-skyrim-gold font-semibold select-none"
+                        className="py-3 px-4 cursor-pointer hover:bg-skyrim-surf3 transition-colors text-skyrim-gold font-semibold select-none whitespace-nowrap"
                         onClick={() => handleSort('follower')}
                       >
                         <div className="flex items-center gap-1.5">
@@ -1085,7 +1630,7 @@ export default function App() {
                         </div>
                       </th>
                       <th 
-                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none hidden sm:table-cell"
+                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none whitespace-nowrap"
                         onClick={() => handleSort('gender')}
                       >
                         <div className="flex items-center gap-1.5">
@@ -1094,7 +1639,7 @@ export default function App() {
                         </div>
                       </th>
                       <th 
-                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none"
+                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none whitespace-nowrap"
                         onClick={() => handleSort('race')}
                       >
                         <div className="flex items-center gap-1.5">
@@ -1103,7 +1648,7 @@ export default function App() {
                         </div>
                       </th>
                       <th 
-                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none hidden md:table-cell"
+                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none whitespace-nowrap"
                         onClick={() => handleSort('class')}
                       >
                         <div className="flex items-center gap-1.5">
@@ -1112,13 +1657,31 @@ export default function App() {
                         </div>
                       </th>
                       <th 
-                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none hidden lg:table-cell"
+                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none whitespace-nowrap"
                         onClick={() => handleSort('mod')}
                       >
                         <div className="flex items-center gap-1.5">
                           Origin Mod
                           <ArrowUpDown className="w-3 h-3 text-gray-500" />
                         </div>
+                      </th>
+                      <th 
+                        className="py-3 px-3 cursor-pointer hover:bg-skyrim-surf3 transition-colors font-semibold select-none whitespace-nowrap"
+                        onClick={() => handleSort('location')}
+                      >
+                        <div className="flex items-center gap-1.5 text-skyrim-gold-light">
+                          Starting Location
+                          <ArrowUpDown className="w-3 h-3 text-gray-500" />
+                        </div>
+                      </th>
+                      <th className="py-3 px-3 font-semibold select-none whitespace-nowrap text-skyrim-gold-light">
+                        Quests
+                      </th>
+                      <th className="py-3 px-3 font-semibold select-none whitespace-nowrap text-skyrim-gold-light">
+                        Mod Interactions
+                      </th>
+                      <th className="py-3 px-3 font-semibold select-none whitespace-nowrap text-stone-400">
+                        Ext-mods
                       </th>
                     </tr>
                   </thead>
@@ -1142,7 +1705,7 @@ export default function App() {
                             }`}
                           >
                             {/* Column 1: Follower Name & Mod Pack tag overlay */}
-                            <td className="py-2.5 px-4 font-semibold text-gray-100 relative">
+                            <td className="py-2.5 px-4 font-semibold text-gray-100 relative whitespace-nowrap">
                               <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className={`text-[13px] md:text-sm font-display tracking-wide uppercase ${
@@ -1163,7 +1726,7 @@ export default function App() {
                             </td>
 
                             {/* Column 2: Gender */}
-                            <td className="py-2.5 px-3 hidden sm:table-cell">
+                            <td className="py-2.5 px-3 whitespace-nowrap">
                               <span className={`text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded shadow-sm ${
                                 f.gender === 'Male' 
                                   ? 'bg-blue-950/40 text-blue-300' 
@@ -1174,20 +1737,86 @@ export default function App() {
                             </td>
 
                             {/* Column 3: Race tag species */}
-                            <td className="py-2.5 px-3">
-                              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded break-all whitespace-normal sm:whitespace-nowrap ${getRaceBadgeClass(f.race)}`}>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded break-all ${getRaceBadgeClass(f.race)}`}>
                                 {f.race}
                               </span>
                             </td>
 
                             {/* Column 4: Combat class / In-game role role */}
-                            <td className="py-2.5 px-3 text-xs text-gray-300 truncate max-w-[130px] hidden md:table-cell">
+                            <td className="py-2.5 px-3 text-xs text-gray-300 whitespace-nowrap max-w-[130px] truncate">
                               {f.class}
                             </td>
 
                             {/* Column 5: Mod package details */}
-                            <td className="py-2.5 px-3 text-xs text-skyrim-gold-light/90 italic truncate max-w-[155px] hidden lg:table-cell">
+                            <td className="py-2.5 px-3 text-xs text-skyrim-gold-light/90 italic whitespace-nowrap max-w-[155px] truncate">
                               {f.mod}
+                            </td>
+
+                            {/* Column 6: Starting Location (New) */}
+                            <td className="py-2.5 px-3 text-xs text-stone-300 whitespace-nowrap">
+                              <div className="inline-flex items-center gap-1 bg-stone-900 border border-stone-800 text-stone-300 px-2 py-0.5 rounded text-[10px] font-semibold">
+                                <MapPin className="w-3 h-3 text-skyrim-gold/60 flex-shrink-0" />
+                                <span className="truncate">{f.location || "Unknown"}</span>
+                              </div>
+                            </td>
+
+                            {/* Column 7: Quests commentaries as Tags */}
+                            <td className="py-2.5 px-3">
+                              <div className="flex flex-wrap gap-1 min-w-[180px] max-w-[300px]">
+                                {f.quests && f.quests.length > 0 ? (
+                                  f.quests.map((q) => (
+                                    <span 
+                                      key={q} 
+                                      className="inline-block bg-emerald-950/40 border border-emerald-900/40 text-[#9adab1] text-[10px] px-1.5 py-0.5 rounded font-sans tracking-tight whitespace-nowrap"
+                                    >
+                                      {q}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-stone-600 italic font-mono">-</span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Column 8: Mod Interactions as Tags */}
+                            <td className="py-2.5 px-3">
+                              <div className="flex flex-wrap gap-1 min-w-[180px] max-w-[300px]">
+                                {f.interactsWith && f.interactsWith.length > 0 ? (
+                                  f.interactsWith.map((followerName) => (
+                                    <span 
+                                      key={followerName} 
+                                      className="inline-block bg-purple-950/40 border border-purple-900/40 text-purple-300 text-[10px] px-1.5 py-0.5 rounded font-sans tracking-tight whitespace-nowrap cursor-pointer hover:bg-purple-900/40"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSelectFollower(followerName);
+                                      }}
+                                    >
+                                      {followerName}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-stone-600 italic font-mono">-</span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Column 9: Non-Follower Mod commentary count as Tags */}
+                            <td className="py-2.5 px-3">
+                              <div className="flex flex-wrap gap-1 min-w-[180px] max-w-[300px]">
+                                {f.nonFollowerMods && f.nonFollowerMods.length > 0 ? (
+                                  f.nonFollowerMods.map((m) => (
+                                    <span 
+                                      key={m} 
+                                      className="inline-block bg-cyan-950/40 border border-cyan-900/40 text-cyan-300 text-[10px] px-1.5 py-0.5 rounded font-sans tracking-tight whitespace-nowrap"
+                                    >
+                                      {m}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-stone-600 italic font-mono">-</span>
+                                )}
+                              </div>
                             </td>
 
                           </tr>
@@ -1195,7 +1824,7 @@ export default function App() {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={5} className="py-12 px-4 text-center text-gray-500">
+                        <td colSpan={9} className="py-12 px-4 text-center text-gray-500">
                           <XCircle className="w-8 h-8 text-skyrim-gold/30 mx-auto mb-2" />
                           <p className="font-display font-medium text-xs tracking-wider uppercase text-gray-400">
                             No Followers Matching Filters Found
@@ -1215,8 +1844,8 @@ export default function App() {
 
           </div>
 
-          {/* RIGHT BENTO BLOCK (5/12 cols): Live Detail Inspector */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Detailed Follower Profile Detail Inspector */}
+          <div className="w-full flex flex-col gap-6">
             
             {/* Live profile sheet column block */}
             <div className="flex flex-col gap-4">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Follower } from '../types';
 import { isPatchRequired, getModPackTag } from '../data';
-import { ExternalLink, ShieldAlert, BadgeInfo, Swords, Compass, CircleHelp } from 'lucide-react';
+import { ExternalLink, ShieldAlert, BadgeInfo, Swords, Compass, CircleHelp, MapPin, Scroll, Layers } from 'lucide-react';
 
 interface FollowerDetailProps {
   follower: Follower;
@@ -86,7 +86,7 @@ export default function FollowerDetail({ follower, onSelectFollower, followersLi
           </div>
         </div>
 
-        {/* Core Stats Panel (Class and Mod info) */}
+        {/* Core Stats Panel (Class, Mod, Location, Quests Info) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
           {/* Class Section */}
           <div className="bg-skyrim-bg/60 p-3 rounded-lg border border-skyrim-border/40 flex items-start gap-2.5">
@@ -115,79 +115,157 @@ export default function FollowerDetail({ follower, onSelectFollower, followersLi
             <Compass className="w-4 h-4 text-skyrim-gold mt-0.5" />
             <div className="overflow-hidden w-full">
               <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Origin Mod Base</p>
-              <p className="text-sm font-medium text-gray-200 mt-0.5 truncate">{follower.mod || '—'}</p>
+              <p className="text-sm font-medium text-gray-200 mt-0.5 truncate" title={follower.mod}>{follower.mod || '—'}</p>
+            </div>
+          </div>
+
+          {/* Location Section */}
+          <div className="bg-skyrim-bg/60 p-3 rounded-lg border border-skyrim-border/40 flex items-start gap-2.5">
+            <MapPin className="w-4 h-4 text-skyrim-gold mt-0.5" />
+            <div className="overflow-hidden w-full">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Starting Location</p>
+              <p className="text-sm font-semibold text-skyrim-gold-light mt-0.5 truncate" title={follower.location}>
+                {follower.location || '—'}
+              </p>
+            </div>
+          </div>
+
+          {/* Quests Summary Section */}
+          <div className="bg-skyrim-bg/60 p-3 rounded-lg border border-skyrim-border/40 flex items-start gap-2.5">
+            <Scroll className="w-4 h-4 text-skyrim-gold mt-0.5" />
+            <div className="overflow-hidden w-full">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Quests Commented</p>
+              <p className="text-sm font-semibold text-gray-200 mt-0.5">
+                {follower.quests?.length > 0 ? `${follower.quests.length} Quests` : 'None documented'}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="p-6 flex-1 flex flex-col justify-between gap-6">
-        {/* Interaction Details List */}
-        <div>
-          <div className="flex items-center justify-between gap-2 border-b border-skyrim-border pb-2 mb-4">
-            <h3 className="font-display font-semibold text-xs tracking-wider uppercase text-gray-300">
-              Dialogue & crosstalk list ({follower.interactsWith.length})
-            </h3>
-            
-            {hasBanterPatchConnection && (
-              <span className="flex items-center gap-1.5 text-[10px] text-sky-300 font-medium bg-sky-950/40 px-2 py-0.5 rounded border border-sky-800/40">
-                <ShieldAlert className="w-3 h-3" />
-                Patch may be required
-              </span>
+      <div className="p-6 flex-1 flex flex-col justify-between gap-6 overflow-y-auto max-h-[500px]">
+        <div className="flex flex-col gap-6">
+          
+          {/* Section 1: Dialogue Crosstalk */}
+          <div>
+            <div className="flex items-center justify-between gap-2 border-b border-skyrim-border pb-2 mb-4">
+              <h3 className="font-display font-semibold text-xs tracking-wider uppercase text-gray-300">
+                Dialogue & crosstalk list ({follower.interactsWith.length})
+              </h3>
+              
+              {hasBanterPatchConnection && (
+                <span className="flex items-center gap-1.5 text-[10px] text-sky-305 font-medium bg-sky-950/40 px-2 py-0.5 rounded border border-sky-800/40">
+                  <ShieldAlert className="w-3 h-3" />
+                  Patch may be required
+                </span>
+              )}
+            </div>
+
+            {follower.interactsWith.length > 0 ? (
+              <div className="flex flex-wrap gap-2 max-h-[140px] overflow-y-auto pr-1">
+                {follower.interactsWith.map(connName => {
+                  const isPatch = isPatchRequired(follower.follower, connName);
+                  const isFoundInDb = followersList.some(f => f.follower.toLowerCase() === connName.toLowerCase());
+
+                  return (
+                    <button
+                      key={connName}
+                      onClick={() => {
+                        if (isFoundInDb) {
+                          onSelectFollower(connName);
+                        }
+                      }}
+                      className={`text-xs px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-all text-left group ${
+                        isFoundInDb
+                          ? 'bg-skyrim-surf3 hover:bg-skyrim-gold/15 active:bg-skyrim-gold/20 border border-skyrim-border hover:border-skyrim-gold/50 text-gray-300 hover:text-skyrim-gold-bright cursor-pointer'
+                          : 'bg-skyrim-bg/40 border border-skyrim-border/60 text-gray-500 cursor-help'
+                      }`}
+                      title={
+                        !isFoundInDb 
+                          ? `${connName} is an external character mentioned in dialogue but details are managed by other mods.` 
+                          : isPatch 
+                          ? `Click to view ${connName} (Crosstalk requires separate patch)` 
+                          : `Click to view ${connName}`
+                      }
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70 group-hover:scale-125 transition-transform" />
+                      <span>{connName}</span>
+                      {isPatch && (
+                        <span className="text-[10px] font-semibold text-sky-450 bg-sky-950/40 px-1 rounded-sm border border-sky-800/20 leading-none">
+                          Patch
+                        </span>
+                      )}
+                      {!isFoundInDb && (
+                        <CircleHelp className="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition-colors" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center p-4 bg-skyrim-bg/30 border border-dashed border-skyrim-border/50 rounded-lg text-gray-500 text-xs text-center">
+                This follower does not initiate documented direct-crosstalk or unique chatter with any other mods yet.
+              </div>
             )}
           </div>
 
-          {follower.interactsWith.length > 0 ? (
-            <div className="flex flex-wrap gap-2 max-h-[180px] overflow-y-auto pr-1">
-              {follower.interactsWith.map(connName => {
-                const isPatch = isPatchRequired(follower.follower, connName);
-                const isFoundInDb = followersList.some(f => f.follower.toLowerCase() === connName.toLowerCase());
-
-                return (
-                  <button
-                    key={connName}
-                    onClick={() => {
-                      if (isFoundInDb) {
-                        onSelectFollower(connName);
-                      }
-                    }}
-                    className={`text-xs px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-all text-left group ${
-                      isFoundInDb
-                        ? 'bg-skyrim-surf3 hover:bg-skyrim-gold/15 active:bg-skyrim-gold/20 border border-skyrim-border hover:border-skyrim-gold/50 text-gray-300 hover:text-skyrim-gold-bright cursor-pointer'
-                        : 'bg-skyrim-bg/40 border border-skyrim-border/60 text-gray-500 cursor-help'
-                    }`}
-                    title={
-                      !isFoundInDb 
-                        ? `${connName} is an external character mentioned in dialogue but details are managed by other mods.` 
-                        : isPatch 
-                        ? `Click to view ${connName} (Crosstalk requires separate patch)` 
-                        : `Click to view ${connName}`
-                    }
+          {/* Section 2: Quest Commentaries */}
+          <div>
+            <div className="flex items-center gap-2 border-b border-skyrim-border/40 pb-1.5 mb-2.5">
+              <Scroll className="w-3.5 h-3.5 text-skyrim-gold" />
+              <h3 className="font-display font-semibold text-[11px] tracking-wider uppercase text-gray-300">
+                Quest Commentaries list
+              </h3>
+            </div>
+            {follower.quests && follower.quests.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto pr-1">
+                {follower.quests.map(quest => (
+                  <span 
+                    key={quest} 
+                    className="text-[10.5px] px-2.5 py-1 rounded bg-[#231d16] text-[#eadabe] border border-skyrim-gold/20 font-medium"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70 group-hover:scale-125 transition-transform" />
-                    <span>{connName}</span>
-                    {isPatch && (
-                      <span className="text-[10px] font-semibold text-sky-400 bg-sky-950/40 px-1 rounded-sm border border-sky-800/20 leading-none">
-                        Patch
-                      </span>
-                    )}
-                    {!isFoundInDb && (
-                      <CircleHelp className="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition-colors" />
-                    )}
-                  </button>
-                );
-              })}
+                    {quest}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className="text-[11px] text-gray-500 italic px-1">
+                No specific mainstream quest commentaries cataloged.
+              </div>
+            )}
+          </div>
+
+          {/* Section 3: Non-Follower Mod Commentaries */}
+          <div>
+            <div className="flex items-center gap-2 border-b border-skyrim-border/40 pb-1.5 mb-2.5">
+              <Layers className="w-3.5 h-3.5 text-skyrim-gold" />
+              <h3 className="font-display font-semibold text-[11px] tracking-wider uppercase text-gray-300">
+                Non-Follower Mod Dialogue Reviews
+              </h3>
             </div>
-          ) : (
-            <div className="flex items-center justify-center p-6 bg-skyrim-bg/30 border border-dashed border-skyrim-border/50 rounded-lg text-gray-500 text-xs">
-              This follower does not initiate documented direct-crosstalk or unique chatter with any other mods yet.
-            </div>
-          )}
+            {follower.nonFollowerMods && follower.nonFollowerMods.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto pr-1">
+                {follower.nonFollowerMods.map(modItem => (
+                  <span 
+                    key={modItem} 
+                    className="text-[10.5px] px-2.5 py-1 rounded bg-[#181d1e] text-cyan-300 border border-cyan-900/45 font-medium"
+                  >
+                    {modItem}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className="text-[11px] text-gray-500 italic px-1">
+                No special dialogue with non-follower mods cataloged (e.g., Quest expansion mods).
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* Footer actions inside detail cards */}
-        <div className="bg-skyrim-bg/40 p-4 rounded-lg border border-skyrim-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+        <div className="bg-skyrim-bg/40 p-4 rounded-lg border border-skyrim-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
           <div className="flex items-center gap-2">
             <BadgeInfo className="w-4 h-4 text-skyrim-gold-light shrink-0" />
             <p className="text-[11px] text-gray-400">
